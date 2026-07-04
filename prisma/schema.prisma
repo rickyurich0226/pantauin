@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum NotifChannel {
+  EMAIL
+  WHATSAPP
+  TELEGRAM
+  PUSH
+}
+
+enum WatchCategory {
+  TENDER
+  PROPERTI
+  KENDARAAN
+  BISNIS
+  INVESTASI
+  LOWONGAN
+  BEASISWA
+  BANTUAN
+}
+
+enum NotifStatus {
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+  SKIPPED_DUPLICATE
+  READ
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  phone         String?
+  whatsapp      String?
+  telegramId    String?
+  role          Role           @default(USER)
+  plan          Plan           @default(FREE)
+  planExpiresAt DateTime?
+  isActive      Boolean        @default(true)
+  needsProfile  Boolean        @default(false)
+  notifChannels NotifChannel[] @default([EMAIL])
+  notifEnabled  Boolean        @default(true)
+  quietStart    String?        @default("22:00")
+  quietEnd      String?        @default("07:00")
+  whatsappVerified Boolean        @default(false)
+  notifPreference  NotifChannel[] @default([EMAIL])
+  registrationIp          String?
+  lastLoginAt             DateTime?
+  lastLoginIp             String?
+  referralCode            String?   @unique
+  referredBy              String?
+  referralCount           Int       @default(0)
+  twoFactorEnabled        Boolean   @default(false)
+  twoFactorSecret         String?
+  twoFactorSecretPending  String?
+  twoFactorRecoveryCodes  String[]  @default([])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  watches       WatchQuery[]
+  notifications Notification[]
+  transactions  Transaction[]
+  auditLogs     AuditLog[]
+  @@index([email])
+  @@index([plan])
+  @@index([role])
+}
+
+model WatchQuery {
+  id          String        @id @default(cuid())
+  userId      String
+  name        String
+  category    WatchCategory
+  queryText   String
+  filters     Json          @default("{}")
+  channels    NotifChannel[]
+  frequency   String        @default("REALTIME")
+  isActive    Boolean       @default(true)
+  lastRunAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user          User           @relation(fields:[userId], references:[id], onDelete:Cascade)
+  notifications Notification[]
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Notification {
+  id         String       @id @default(cuid())
+  userId     String
+  watchId    String?
+  title      String
+  body       String       @db.Text
+  sourceUrl  String?
+  sourceId   String?
+  channel    NotifChannel @default(EMAIL)
+  status     NotifStatus  @default(QUEUED)
+  isRead     Boolean      @default(false)
+  matchScore Float        @default(0)
+  feedback   String?
+  contentHash    String?
+  attemptNumber  Int      @default(1)
+  fallbackFromId String?
+  failedReason   String?  @db.Text
+  sentAt     DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user  User        @relation(fields:[userId], references:[id], onDelete:Cascade)
+  watch WatchQuery? @relation(fields:[watchId], references:[id], onDelete:SetNull)
+  @@index([userId])
+  @@index([status])
+  @@index([contentHash])
+  @@index([isRead])
+}
+
+model Transaction {
+  id        String            @id @default(cuid())
+  userId    String
+  orderId   String            @unique
+  plan      Plan
+  billing   String            @default("MONTHLY")
+  amount    Int
+  tax       Int               @default(0)
+  total     Int
+  status    TransactionStatus @default(PENDING)
+  snapToken String?
+  paidAt    DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model ScraperJob {
+  id              String   @id @default(cuid())
+  source          String
+  category        String
+  url             String   @default("")
+  type            String   @default("RSS")
+  config          Json     @default("{}")
+  isActive        Boolean  @default(true)
+  intervalMinutes Int      @default(30)
+  status          String   @default("idle")
+  lastRunAt       DateTime?
+  itemsFound      Int      @default(0)
+  errorCount      Int      @default(0)
+  lastError       String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  items           ListingItem[]
+  @@index([source])
+  @@index([isActive])
+}
+
+model ListingItem {
+  id           String        @id @default(cuid())
+  scraperJobId String
+  externalId   String
+  title        String
+  description  String        @db.Text
+  url          String?
+  category     WatchCategory
+  publishedAt  DateTime?
+  contentHash String?
+  price       Decimal? @db.Decimal(15, 2)
+  location    String?
+  matchedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  scraperJob   ScraperJob    @relation(fields:[scraperJobId], references:[id], onDelete:Cascade)
+  @@unique([scraperJobId, externalId])
+  @@index([category])
+  @@index([createdAt])
+  @@index([matchedAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String
+  detail    String?  @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user User? @relation(fields:[userId], references:[id], onDelete:SetNull)
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+

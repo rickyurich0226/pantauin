@@ -1,0 +1,14 @@
+# Cron jobs untuk pantau.in — tambahkan dengan: crontab -e
+# Ganti GANTI_CRON_SECRET dengan nilai CRON_SECRET yang ada di file .env
+
+# Ambil item baru dari semua sumber monitoring aktif, tiap 15 menit
+*/15 * * * * curl -s -H "x-cron-secret: GANTI_CRON_SECRET" https://pantau.in/api/cron/fetch-sources >> /var/log/pantau-cron.log 2>&1
+
+# Cocokkan item baru dengan watch query user (AI/keyword matching), 5 menit setelah fetch
+2-59/15 * * * * curl -s -H "x-cron-secret: GANTI_CRON_SECRET" https://pantau.in/api/cron/run-matching >> /var/log/pantau-cron.log 2>&1
+
+# Kirim notifikasi yang sudah di-antrian (email/WA/Telegram), tiap 5 menit
+*/5 * * * * curl -s -H "x-cron-secret: GANTI_CRON_SECRET" https://pantau.in/api/cron/dispatch-notifications >> /var/log/pantau-cron.log 2>&1
+
+# Cek & downgrade plan yang sudah expired, tiap hari jam 01:00
+0 1 * * * curl -s -H "x-cron-secret: GANTI_CRON_SECRET" https://pantau.in/api/cron/check-plans >> /var/log/pantau-cron.log 2>&1

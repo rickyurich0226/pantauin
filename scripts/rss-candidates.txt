@@ -1,0 +1,173 @@
+# Format: URL|CATEGORY|SOURCE_NAME
+# ============================================
+# TENDER — Google News per kota (proven RSS)
+# ============================================
+https://news.google.com/rss/search?q=tender+pengadaan+Bandung&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Bandung
+https://news.google.com/rss/search?q=tender+pengadaan+Surabaya&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Surabaya
+https://news.google.com/rss/search?q=tender+pengadaan+Semarang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Semarang
+https://news.google.com/rss/search?q=tender+pengadaan+Medan&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Medan
+https://news.google.com/rss/search?q=tender+pengadaan+Makassar&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Makassar
+https://news.google.com/rss/search?q=tender+pengadaan+Yogyakarta&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Yogyakarta
+https://news.google.com/rss/search?q=tender+pengadaan+Bali&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Bali
+https://news.google.com/rss/search?q=tender+pengadaan+Kalimantan&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Kalimantan
+https://news.google.com/rss/search?q=tender+pengadaan+Sulawesi&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Sulawesi
+https://news.google.com/rss/search?q=pengadaan+barang+jasa+2025&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Pengadaan 2025
+https://news.google.com/rss/search?q=lelang+proyek+pemerintah&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Proyek
+https://news.google.com/rss/search?q=tender+rumah+sakit+pemerintah&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender RS Pemerintah
+https://news.google.com/rss/search?q=tender+sekolah+universitas+negeri&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Sekolah
+
+# ============================================
+# LOWONGAN — per kota dan bidang
+# ============================================
+https://news.google.com/rss/search?q=lowongan+kerja+Medan&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Medan
+https://news.google.com/rss/search?q=lowongan+kerja+Makassar&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Makassar
+https://news.google.com/rss/search?q=lowongan+kerja+Semarang&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Semarang
+https://news.google.com/rss/search?q=lowongan+kerja+Yogyakarta&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Yogyakarta
+https://news.google.com/rss/search?q=lowongan+kerja+Bali&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Bali
+https://news.google.com/rss/search?q=rekrutmen+TNI+Polri+2025&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Rekrutmen TNI Polri
+https://news.google.com/rss/search?q=seleksi+PPPK+2025&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Seleksi PPPK
+https://news.google.com/rss/search?q=lowongan+kerja+tambang+migas&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Tambang Migas
+https://news.google.com/rss/search?q=lowongan+kerja+perbankan+2025&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Perbankan
+https://news.google.com/rss/search?q=lowongan+kerja+kesehatan+dokter+perawat&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Kesehatan
+https://news.google.com/rss/search?q=lowongan+kerja+guru+dosen&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Pendidikan
+https://news.google.com/rss/search?q=lowongan+kerja+logistik+supir&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Logistik
+
+# ============================================
+# PROPERTI — per kota
+# ============================================
+https://news.google.com/rss/search?q=rumah+dijual+Bandung&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Bandung
+https://news.google.com/rss/search?q=properti+dijual+Medan&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Medan
+https://news.google.com/rss/search?q=properti+dijual+Yogyakarta&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Yogyakarta
+https://news.google.com/rss/search?q=tanah+dijual+Bogor&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Bogor
+https://news.google.com/rss/search?q=ruko+dijual+Bekasi&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Ruko Bekasi
+https://news.google.com/rss/search?q=apartemen+dijual+Jakarta&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Apartemen Jakarta
+https://news.google.com/rss/search?q=kavling+murah+Depok&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Kavling Depok
+https://news.google.com/rss/search?q=properti+komersial+Jakarta&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Komersial Jakarta
+https://news.google.com/rss/search?q=lelang+properti+bank+2025&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Lelang Properti Bank 2025
+
+# ============================================
+# KENDARAAN — per kota dan jenis
+# ============================================
+https://news.google.com/rss/search?q=mobil+bekas+Jakarta&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Mobil Bekas Jakarta
+https://news.google.com/rss/search?q=motor+bekas+Jakarta&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Motor Bekas Jakarta
+https://news.google.com/rss/search?q=bus+bekas+dijual&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Bus Bekas
+https://news.google.com/rss/search?q=alat+berat+bekas+dijual&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Alat Berat Bekas
+https://news.google.com/rss/search?q=mobil+listrik+bekas+Indonesia&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Mobil Listrik Bekas
+https://news.google.com/rss/search?q=mobil+niaga+pickup+bekas&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Mobil Niaga Bekas
+
+# ============================================
+# INVESTASI — tambahan
+# ============================================
+https://news.google.com/rss/search?q=crowdfunding+investasi+Indonesia&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Crowdfunding
+https://news.google.com/rss/search?q=deposito+bunga+tertinggi+2025&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Deposito Bunga Tinggi
+https://news.google.com/rss/search?q=emas+investasi+harga&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Investasi Emas
+https://news.google.com/rss/search?q=P2P+lending+fintech+Indonesia&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — P2P Lending
+
+# ============================================
+# BISNIS — niche tambahan
+# ============================================
+https://news.google.com/rss/search?q=franchise+waralaba+murah+Indonesia&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Franchise Murah
+https://news.google.com/rss/search?q=bisnis+online+Indonesia+2025&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Bisnis Online 2025
+https://news.google.com/rss/search?q=peluang+ekspor+produk+Indonesia&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Peluang Ekspor
+https://news.google.com/rss/search?q=agen+resmi+produk+Indonesia&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Agen Resmi
+
+
+# ============================================
+# AUTO-GENERATED 29 Jun 2026 22:40: 96 kandidat baru
+# ============================================
+https://news.google.com/rss/search?q=tender+pengadaan+Palembang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Palembang
+https://news.google.com/rss/search?q=lelang+proyek+Palembang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Palembang
+https://news.google.com/rss/search?q=tender+pengadaan+Pekanbaru&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Pekanbaru
+https://news.google.com/rss/search?q=lelang+proyek+Pekanbaru&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Pekanbaru
+https://news.google.com/rss/search?q=tender+pengadaan+Balikpapan&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Balikpapan
+https://news.google.com/rss/search?q=lelang+proyek+Balikpapan&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Balikpapan
+https://news.google.com/rss/search?q=tender+pengadaan+Samarinda&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Samarinda
+https://news.google.com/rss/search?q=lelang+proyek+Samarinda&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Samarinda
+https://news.google.com/rss/search?q=tender+pengadaan+Manado&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Manado
+https://news.google.com/rss/search?q=lelang+proyek+Manado&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Manado
+https://news.google.com/rss/search?q=tender+pengadaan+Padang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Padang
+https://news.google.com/rss/search?q=lelang+proyek+Padang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Padang
+https://news.google.com/rss/search?q=tender+pengadaan+Banjarmasin&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Banjarmasin
+https://news.google.com/rss/search?q=lelang+proyek+Banjarmasin&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Banjarmasin
+https://news.google.com/rss/search?q=tender+pengadaan+Pontianak&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Pontianak
+https://news.google.com/rss/search?q=lelang+proyek+Pontianak&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Pontianak
+https://news.google.com/rss/search?q=tender+pengadaan+Jambi&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Jambi
+https://news.google.com/rss/search?q=lelang+proyek+Jambi&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Jambi
+https://news.google.com/rss/search?q=tender+pengadaan+Mataram&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Mataram
+https://news.google.com/rss/search?q=lelang+proyek+Mataram&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Mataram
+https://news.google.com/rss/search?q=tender+pengadaan+Kupang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Kupang
+https://news.google.com/rss/search?q=lelang+proyek+Kupang&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Kupang
+https://news.google.com/rss/search?q=tender+pengadaan+Ambon&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Ambon
+https://news.google.com/rss/search?q=lelang+proyek+Ambon&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Ambon
+https://news.google.com/rss/search?q=tender+pengadaan+Jayapura&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Jayapura
+https://news.google.com/rss/search?q=lelang+proyek+Jayapura&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Jayapura
+https://news.google.com/rss/search?q=tender+pengadaan+Batam&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Batam
+https://news.google.com/rss/search?q=lelang+proyek+Batam&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Batam
+https://news.google.com/rss/search?q=tender+pengadaan+Lampung&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Lampung
+https://news.google.com/rss/search?q=lelang+proyek+Lampung&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Lampung
+https://news.google.com/rss/search?q=tender+pengadaan+Palu&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Palu
+https://news.google.com/rss/search?q=lelang+proyek+Palu&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Palu
+https://news.google.com/rss/search?q=tender+pengadaan+Ternate&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Ternate
+https://news.google.com/rss/search?q=lelang+proyek+Ternate&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Ternate
+https://news.google.com/rss/search?q=tender+pengadaan+Sorong&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Sorong
+https://news.google.com/rss/search?q=lelang+proyek+Sorong&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Sorong
+https://news.google.com/rss/search?q=tender+pengadaan+Kendari&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Kendari
+https://news.google.com/rss/search?q=lelang+proyek+Kendari&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Kendari
+https://news.google.com/rss/search?q=tender+pengadaan+Gorontalo&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Gorontalo
+https://news.google.com/rss/search?q=lelang+proyek+Gorontalo&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Lelang Gorontalo
+https://news.google.com/rss/search?q=tender+teknologi+informasi+pemerintah&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender IT Pemerintah
+https://news.google.com/rss/search?q=tender+konstruksi+jembatan+jalan&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Konstruksi Jalan
+https://news.google.com/rss/search?q=tender+alat+kesehatan+pemerintah&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender Alkes
+https://news.google.com/rss/search?q=pengadaan+seragam+dinas+2025&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Pengadaan Seragam Dinas
+https://news.google.com/rss/search?q=tender+makan+bergizi+gratis+2025&hl=id&gl=ID&ceid=ID:id|TENDER|Google News — Tender MBG 2025
+https://news.google.com/rss/search?q=properti+dijual+Surabaya&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Surabaya
+https://news.google.com/rss/search?q=tanah+dijual+Surabaya&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Surabaya
+https://news.google.com/rss/search?q=properti+dijual+Semarang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Semarang
+https://news.google.com/rss/search?q=tanah+dijual+Semarang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Semarang
+https://news.google.com/rss/search?q=properti+dijual+Palembang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Palembang
+https://news.google.com/rss/search?q=tanah+dijual+Palembang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Palembang
+https://news.google.com/rss/search?q=properti+dijual+Balikpapan&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Balikpapan
+https://news.google.com/rss/search?q=tanah+dijual+Balikpapan&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Balikpapan
+https://news.google.com/rss/search?q=properti+dijual+Batam&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Batam
+https://news.google.com/rss/search?q=tanah+dijual+Batam&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Batam
+https://news.google.com/rss/search?q=properti+dijual+Tangerang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Tangerang
+https://news.google.com/rss/search?q=tanah+dijual+Tangerang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Tangerang
+https://news.google.com/rss/search?q=properti+dijual+Cikarang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Cikarang
+https://news.google.com/rss/search?q=tanah+dijual+Cikarang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Cikarang
+https://news.google.com/rss/search?q=properti+dijual+Karawang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Karawang
+https://news.google.com/rss/search?q=tanah+dijual+Karawang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Karawang
+https://news.google.com/rss/search?q=properti+dijual+Malang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Malang
+https://news.google.com/rss/search?q=tanah+dijual+Malang&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Malang
+https://news.google.com/rss/search?q=properti+dijual+Denpasar&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Denpasar
+https://news.google.com/rss/search?q=tanah+dijual+Denpasar&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Tanah Denpasar
+https://news.google.com/rss/search?q=lelang+rumah+bank+BTN+2025&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Lelang Rumah BTN
+https://news.google.com/rss/search?q=KPR+subsidi+FLPP+2025&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — KPR FLPP 2025
+https://news.google.com/rss/search?q=rumah+dijual+bawah+500+juta&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Rumah di Bawah 500 Juta
+https://news.google.com/rss/search?q=properti+dijual+pinggir+tol&hl=id&gl=ID&ceid=ID:id|PROPERTI|Google News — Properti Pinggir Tol
+https://news.google.com/rss/search?q=motor+bekas+murah+2025&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Motor Bekas Murah
+https://news.google.com/rss/search?q=lelang+kendaraan+dinas+pemerintah&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Lelang Kendaraan Dinas
+https://news.google.com/rss/search?q=truk+bekas+dijual+Indonesia&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Truk Bekas
+https://news.google.com/rss/search?q=bus+bekas+dijual+Indonesia&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Bus Bekas
+https://news.google.com/rss/search?q=pickup+bekas+murah&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Pickup Bekas Murah
+https://news.google.com/rss/search?q=motor+listrik+murah+2025&hl=id&gl=ID&ceid=ID:id|KENDARAAN|Google News — Motor Listrik Murah
+https://news.google.com/rss/search?q=franchise+murah+modal+kecil+2025&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Franchise Murah 2025
+https://news.google.com/rss/search?q=peluang+usaha+modal+kecil+menguntungkan&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Usaha Modal Kecil
+https://news.google.com/rss/search?q=distributor+reseller+produk+FMCG&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Distributor FMCG
+https://news.google.com/rss/search?q=UMKM+binaan+pemerintah+2025&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — UMKM Pemerintah
+https://news.google.com/rss/search?q=agen+tunggal+produk+indonesia&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Agen Tunggal
+https://news.google.com/rss/search?q=jualan+online+dropship+2025&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Dropship 2025
+https://news.google.com/rss/search?q=bisnis+ekspor+UMKM+indonesia&hl=id&gl=ID&ceid=ID:id|BISNIS|Google News — Ekspor UMKM
+https://news.google.com/rss/search?q=obligasi+ritel+ORI+pemerintah+2025&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — ORI 2025
+https://news.google.com/rss/search?q=IPO+saham+perdana+2025+Indonesia&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — IPO Saham 2025
+https://news.google.com/rss/search?q=reksa+dana+terbaik+return+tinggi&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Reksa Dana Terbaik
+https://news.google.com/rss/search?q=deposito+bunga+tinggi+2025&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Deposito Bunga Tinggi
+https://news.google.com/rss/search?q=P2P+lending+legal+OJK+2025&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — P2P Lending OJK
+https://news.google.com/rss/search?q=sukuk+tabungan+pemerintah+2025&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Sukuk Tabungan
+https://news.google.com/rss/search?q=saham+dividen+2025+IDX&hl=id&gl=ID&ceid=ID:id|INVESTASI|Google News — Saham Dividen IDX
+https://news.google.com/rss/search?q=lowongan+kerja+startup+teknologi+indonesia&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Startup Tech
+https://news.google.com/rss/search?q=magang+mahasiswa+berbayar+2025&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Magang Berbayar 2025
+https://news.google.com/rss/search?q=lowongan+kerja+Kalimantan+Timur&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Kalimantan
+https://news.google.com/rss/search?q=lowongan+kerja+Papua+Sulawesi&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Papua Sulawesi
+https://news.google.com/rss/search?q=rekrutmen+BUMN+2025&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Rekrutmen BUMN
+https://news.google.com/rss/search?q=lowongan+kerja+remote+WFH+indonesia&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Loker Remote WFH
+https://news.google.com/rss/search?q=lowongan+freelance+proyek+indonesia&hl=id&gl=ID&ceid=ID:id|LOWONGAN|Google News — Freelance Proyek

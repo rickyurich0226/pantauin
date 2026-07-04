@@ -1,0 +1,7 @@
+node_modules/
+.next/
+.env
+docker-compose.yml
+app-secrets.env
+dist/
+coverage/

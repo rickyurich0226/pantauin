@@ -1,0 +1,48 @@
+{
+  "site_name": "Pantau.in",
+  "site_tagline": "Internet Dipantau. Peluang Dikirim ke WA Kamu.",
+  "contact_email": "pantau.inofficial@gmail.com",
+  "contact_wa": "https://wa.me/6287890144122",
+  "contact_wa_label": "@pantauin",
+  "telegram_channel": "https://t.me/pantau_inofficialbot",
+  "footer_fitur": [
+    "Monitoring AI Real-time",
+    "Notifikasi Multi Channel",
+    "AI Semantic Matching",
+    "Dashboard Analytics",
+    "API Access"
+  ],
+  "footer_harga": [
+    "Plan Gratis",
+    "Plan Pro — Rp 49K/bln",
+    "Plan Business — Rp 149K/bln",
+    "Perbandingan Plan"
+  ],
+  "footer_developer": [
+    "API Docs",
+    "Changelog",
+    "Status Page",
+    "SDK & Library"
+  ],
+  "footer_legal": [
+    "Syarat & Ketentuan",
+    "Kebijakan Privasi",
+    "FAQ",
+    "Pusat Bantuan"
+  ],
+  "free_max_watches": 3,
+  "free_max_notifs": 30,
+  "match_threshold": 0.72,
+  "maintenance_mode": false,
+  "allow_registration": true,
+  "referral_enabled": true,
+  "referral_reward_referrer_days": 7,
+  "referral_reward_referee_days": 7,
+  "referral_reward_on_upgrade_days": 30,
+  "referral_discount_pro": 10,
+  "referral_discount_biz": 15,
+  "pro_monthly": 49000,
+  "pro_yearly": 470000,
+  "biz_monthly": 149000,
+  "biz_yearly": 1430000
+}
