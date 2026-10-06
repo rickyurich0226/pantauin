@@ -9,6 +9,7 @@ import { createHash } from 'crypto'
 import { XMLParser } from 'fast-xml-parser'
 import * as cheerio from 'cheerio'
 import prisma from './prisma'
+import { Prisma } from '@prisma/client'
 
 const xml = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' })
 
@@ -199,7 +200,15 @@ export async function fetchSource(job: { id: string; url: string; type: string; 
         },
       })
       created++
-    } catch (e) { console.error('[ingest] insert failed:', e instanceof Error ? e.message : e) }
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        // Dedup race benign: item duplikat (title+kategori+hari) kena constraint
+        // setelah lolos pre-check karena fetch sumber lain berjalan paralel.
+        // Ini bukan error — data sudah aman, item cukup dilewati.
+        continue
+      }
+      console.error('[ingest] insert failed:', e instanceof Error ? e.message : e)
+    }
   }
   return created
 }
@@ -272,7 +281,12 @@ export async function fetchGoogleNewsForWatch(watch: {
           },
         })
         created++
-      } catch (e) { console.error('[ingest-gnews] insert failed:', e instanceof Error ? e.message : e) }
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+          continue
+        }
+        console.error('[ingest-gnews] insert failed:', e instanceof Error ? e.message : e)
+      }
     }
     return created
   } catch {
