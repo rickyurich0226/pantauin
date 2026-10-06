@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { cleanupOldNotifications } from '@/lib/dedup'
+import { requireCronSecret } from '@/lib/cronAuth'
 
 // Wajib: tanpa ini, Next.js mencoba pre-render route ini sebagai halaman statis
 // saat `npm run build`, yang akan query database di tahap build — gagal karena
@@ -11,7 +12,8 @@ export const dynamic = 'force-dynamic'
  * (spec section 1 acceptance criteria). Jadwalkan via crontab terpisah dari
  * check-plans dan dispatch-notifications.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = requireCronSecret(req); if (denied) return denied
   const deletedCount = await cleanupOldNotifications()
   return NextResponse.json({ success: true, deletedCount, timestamp: new Date().toISOString() })
 }

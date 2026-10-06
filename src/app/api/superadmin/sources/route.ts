@@ -12,10 +12,53 @@ async function requireSuperAdmin() {
 // Super Admin controls exactly which RSS/JSON-API sources Pantau.in monitors
 // per category — this is the real "kebijakan" control panel for what gets
 // watched, replacing any notion of unrestricted scraping.
-export async function GET() {
+//
+// Paginated + filterable: ScraperJob sudah tembus ratusan baris, fetch-all
+// tanpa batas (dulu di sini) berat di-query dan di-render, apalagi tab ini
+// auto-refresh tiap 30 detik. `select` juga dipersempit — kolom `config`
+// (JSON) tidak pernah ditampilkan di tabel, jadi tidak perlu ikut ditarik.
+export async function GET(req: NextRequest) {
   if (!(await requireSuperAdmin())) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const sources = await prisma.scraperJob.findMany({ orderBy: { createdAt: 'desc' } })
-  return NextResponse.json({ sources })
+  const { searchParams } = new URL(req.url)
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
+  const pageSize = Math.min(200, Math.max(1, parseInt(searchParams.get('pageSize') || '50', 10) || 50))
+  const category = searchParams.get('category')?.trim() || undefined
+  const status = searchParams.get('status')?.trim() || undefined // 'active' | 'error' | 'inactive'
+  const search = searchParams.get('search')?.trim() || undefined
+
+  const where: any = {}
+  if (category) where.category = category
+  if (search) where.source = { contains: search, mode: 'insensitive' }
+  if (status === 'error') where.status = 'error'
+  else if (status === 'active') { where.isActive = true; where.status = { not: 'error' } }
+  else if (status === 'inactive') where.isActive = false
+
+  const [sources, total, activeCount, errorCount, itemsAgg] = await Promise.all([
+    prisma.scraperJob.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: {
+        id: true, source: true, category: true, url: true, type: true,
+        isActive: true, intervalMinutes: true, status: true, lastRunAt: true,
+        itemsFound: true, errorCount: true, lastError: true, createdAt: true,
+      },
+    }),
+    prisma.scraperJob.count({ where }),
+    prisma.scraperJob.count({ where: { ...where, isActive: true, status: { not: 'error' } } }),
+    prisma.scraperJob.count({ where: { ...where, status: 'error' } }),
+    prisma.scraperJob.aggregate({ where, _sum: { itemsFound: true } }),
+  ])
+
+  return NextResponse.json({
+    sources,
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    summary: { total, active: activeCount, error: errorCount, totalItems: itemsAgg._sum.itemsFound || 0 },
+  })
 }
 
 export async function POST(req: NextRequest) {

@@ -30,6 +30,9 @@ export function encryptPII(plaintext: string): string {
 }
 
 export function decryptPII(ciphertext: string): string {
+  if (!ciphertext) return ''
+  // Data lama tersimpan plaintext (nomor HP / chat ID): kembalikan apa adanya
+  if (/^[-+]?[0-9][0-9 +-]{4,19}$/.test(ciphertext.trim())) return ciphertext.trim()
   if (!ciphertext || !ciphertext.includes(':')) return ciphertext || ''
   try {
     const [ivHex, authTagHex, encryptedHex] = ciphertext.split(':')
@@ -48,7 +51,12 @@ export function decryptPII(ciphertext: string): string {
 }
 
 // Content fingerprinting for deduplication (bagian 1 spec)
-export function buildContentHash(p: { title: string; price?: number | null; location?: string | null }): string {
+// Kategori "listing marketplace" — item yang sama dari domain berbeda (mis.
+// properti yang sama di OLX vs Rumah123) memang layak dianggap independen,
+// karena user mungkin mau tau semua platform yang jual barang itu.
+const MARKETPLACE_CATEGORIES = new Set(['PROPERTI', 'KENDARAAN'])
+
+export function buildContentHash(p: { title: string; price?: number | null; location?: string | null; sourceUrl?: string | null; category?: string | null }): string {
   const normalizedTitle = p.title
     .toLowerCase()
     .replace(/[^\w\s]/g, '')       // remove punctuation/symbols
@@ -56,6 +64,14 @@ export function buildContentHash(p: { title: string; price?: number | null; loca
     .trim()
   const normalizedPrice = p.price ? Math.round(p.price / 1000) * 1000 : 0 // round to nearest 1000 to tolerate minor formatting diffs
   const normalizedLocation = (p.location || '').toLowerCase().trim()
-  const raw = `${normalizedTitle}|${normalizedPrice}|${normalizedLocation}`
+  // Domain HANYA disertakan untuk kategori marketplace. Untuk kategori berita
+  // (TENDER, BISNIS, dst), berita yang sama diliput banyak media itu wajar —
+  // menyertakan domain di hash membuat dedup gagal mendeteksinya sebagai
+  // duplikat, memboroskan kuota notifikasi untuk cerita yang sama persis.
+  let normalizedDomain = ''
+  if (p.sourceUrl && p.category && MARKETPLACE_CATEGORIES.has(p.category)) {
+    try { normalizedDomain = new URL(p.sourceUrl).hostname.replace(/^www\./, '') } catch {}
+  }
+  const raw = `${normalizedTitle}|${normalizedPrice}|${normalizedLocation}|${normalizedDomain}`
   return crypto.createHash('sha256').update(raw).digest('hex')
 }

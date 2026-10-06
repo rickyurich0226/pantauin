@@ -7,7 +7,40 @@ import { watchQuerySchema, validateBody } from '@/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
-async function auth() { const s = await getServerSession(authOptions); return s?.user ? s : null }
+async function auth() {
+  const s = await getServerSession(authOptions)
+  return s?.user ? s : null
+}
+
+const CATEGORY_EXPANSION = {
+  PROPERTI: 'dijual beli harga rumah tanah kavling hunian properti',
+  TENDER: 'pengadaan lelang proyek pemerintah kontrak rekanan',
+  BISNIS: 'usaha peluang franchise investasi modal untung bisnis',
+  LOWONGAN: 'kerja loker karir rekrutmen hiring gaji posisi',
+  INVESTASI: 'saham obligasi reksadana return yield dividen portofolio',
+  KENDARAAN: 'dijual bekas second unit harga murah mulus',
+  BEASISWA: 'beasiswa bantuan pendidikan kuliah dana sponsor',
+  BANTUAN: 'bantuan subsidi program pemerintah dana hibah',
+}
+
+function expandQuery(queryText, category, filters) {
+  let result = queryText
+  // Tambah lokasi ke query supaya matching engine bisa prioritaskan
+  if (filters && filters.location) {
+    const loc = filters.location.toLowerCase()
+    if (result.toLowerCase().indexOf(loc) === -1) {
+      result = result + ' ' + filters.location
+    }
+  }
+  // Tambah kata ekspansi kategori
+  const expansion = CATEGORY_EXPANSION[category] || ''
+  if (expansion) {
+    const queryLower = result.toLowerCase()
+    const newWords = expansion.split(' ').filter(w => queryLower.indexOf(w) === -1)
+    if (newWords.length > 0) result = result + ' ' + newWords.join(' ')
+  }
+  return result
+}
 
 export async function GET() {
   const s = await auth(); if (!s) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

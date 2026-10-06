@@ -39,7 +39,7 @@ export default function KeywordPage() {
           {[
             ['Wajib Ada (mustInclude)','Pastikan semua kata tertentu selalu muncul dalam konten. Contoh: "tender" + "konstruksi" + "Jawa Barat" harus semua ada.'],
             ['Kata Pengecualian (exclude)','Saring kata kunci yang tidak relevan. Contoh: pantau "tender gedung" tapi kecualikan "renovasi" dan "perbaikan".'],
-            ['Filter Kategori','Fokus pada kategori tertentu — Tender, Properti, Kendaraan, Bisnis, Investasi, Lowongan, Beasiswa, atau Bantuan Pemerintah.'],
+            ['Filter Kategori','Fokus pada kategori tertentu — Tender, Properti, Kendaraan, Bisnis, Investasi, Lowongan, Beasiswa, atau Bantuan & Subsidi.'],
           ].map(([t, d]) => (
             <div key={t as string} style={{display:'flex',gap:'12px',padding:'16px',background:'white',borderRadius:'10px',border:'1px solid #E8EEF5'}}>
               <span style={{color:'#0F6E56',fontWeight:700,flexShrink:0}}>✓</span>

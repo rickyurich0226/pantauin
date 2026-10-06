@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { fetchGoogleNewsForWatch } from '@/lib/ingest'
 
+import { requireCronSecret } from '@/lib/cronAuth'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret')
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronSecret(req); if (denied) return denied
 
   // Get all active watches
   const watches = await prisma.watchQuery.findMany({

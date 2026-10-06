@@ -1,3 +1,5 @@
+import { classifyItem } from './classify'
+import { createHash } from 'crypto'
 /* eslint-disable @typescript-eslint/no-var-requires */
 // Ingests items from configured monitoring sources (ScraperJob rows).
 // Only pulls from sources the source's own owner explicitly configured —
@@ -123,7 +125,18 @@ async function parseHtml(html: string, config: any): Promise<NormalizedItem[]> {
 // never takes down the whole ingestion run.
 export async function fetchSource(job: { id: string; url: string; type: string; category: string; config: any }) {
   let items: NormalizedItem[] = []
-  const res = await fetch(job.url, { headers: { 'User-Agent': 'PantauinBot/1.0 (+https://pantau.in)' } })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  let res: Response
+  try {
+    res = await fetch(job.url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status} dari sumber`)
   if (job.type === 'JSON_API') {
     items = await parseJsonApi(await res.json(), job.config)
@@ -135,27 +148,58 @@ export async function fetchSource(job: { id: string; url: string; type: string; 
 
   let created = 0
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-  const validItems = items.filter(it => !it.publishedAt || it.publishedAt >= thirtyDaysAgo)
+  // Domain non-Indonesia yang sering muncul di Google News — skip
+  const BLOCKED_DOMAINS = ['vietnam.vn','vietnamplus','tuoitre.vn','nhandan.vn','baomoi.com','thenewslens.com','bangkokpost.com','straitstimes.com','channelnewsasia.com','philstar.com','rappler.com','sunstar.com.ph']
+  const isBlockedDomain = (url?: string) => {
+    if (!url) return false
+    return BLOCKED_DOMAINS.some(d => url.includes(d))
+  }
+  // Filter: hanya artikel Indonesia + tidak lebih dari 30 hari
+  const validItems = items.filter(it => {
+    if (it.publishedAt && it.publishedAt < thirtyDaysAgo) return false
+    if (isBlockedDomain(it.url)) return false
+    return true
+  })
+
   for (const it of validItems.slice(0, 200)) {
     if (!it.title) continue
+    // Gunakan URL sebagai dedup key — artikel yang sama tidak akan masuk lagi
+    const itemCategory = classifyItem((it as any).title, (it as any).description, job.category)
+    const rawStableId = it.url || it.externalId
+    const stableId = rawStableId.length > 500 ? 'sha256:' + createHash('sha256').update(rawStableId).digest('hex') : rawStableId
     try {
-      await prisma.listingItem.upsert({
-        where: { scraperJobId_externalId: { scraperJobId: job.id, externalId: it.externalId } },
-        update: {},
-        create: {
+      // Dedup 1: cek externalId di sumber yang sama
+      const existing = await prisma.listingItem.findFirst({
+        where: { scraperJobId: job.id, externalId: stableId },
+        select: { id: true }
+      })
+      if (existing) continue
+      // Dedup 2: cek title yang sama di kategori yang sama hari ini (lintas sumber)
+      // Batas "hari ini" dihitung dari WIB (UTC+7), bukan waktu server (UTC).
+      const nowWibForDedup = new Date(Date.now() + 7 * 60 * 60 * 1000)
+      const todayStartWib = new Date(Date.UTC(nowWibForDedup.getUTCFullYear(), nowWibForDedup.getUTCMonth(), nowWibForDedup.getUTCDate()) - 7 * 60 * 60 * 1000)
+      const titleDup = await prisma.listingItem.findFirst({
+        where: {
+          category: itemCategory as any,
+          title: { equals: it.title.slice(0, 300), mode: 'insensitive' as any },
+          createdAt: { gte: todayStartWib }
+        },
+        select: { id: true }
+      })
+      if (titleDup) continue
+      await prisma.listingItem.create({
+        data: {
           scraperJobId: job.id,
-          externalId: it.externalId,
+          externalId: stableId,
           title: it.title.slice(0, 300),
           description: it.description.slice(0, 3000),
           url: it.url,
-          category: job.category as any,
+          category: itemCategory as any,
           publishedAt: it.publishedAt,
         },
       })
       created++
-    } catch {
-      // duplicate (race) or bad row — skip, not fatal for the whole run
-    }
+    } catch (e) { console.error('[ingest] insert failed:', e instanceof Error ? e.message : e) }
   }
   return created
 }
@@ -170,7 +214,7 @@ export async function fetchGoogleNewsForWatch(watch: {
 }) {
   // Build Google News RSS URL from query
   const q = encodeURIComponent(watch.queryText)
-  const url = `https://news.google.com/rss/search?q=${q}&hl=id&gl=ID&ceid=ID:id&tbs=qdr:d`
+  const url = `https://news.google.com/rss/search?q=${q}+when:7d&hl=id&gl=ID&ceid=ID:id`
 
   // Find or create a shared ScraperJob anchor for this category
   const p = prisma as any
@@ -181,7 +225,7 @@ export async function fetchGoogleNewsForWatch(watch: {
     job = await p.scraperJob.create({
       data: {
         source: `Google News — ${watch.category}`,
-        url: `https://news.google.com/rss/search?q=${encodeURIComponent(watch.category)}&hl=id&gl=ID&ceid=ID:id`,
+        url: `https://news.google.com/rss/search?q=${encodeURIComponent(watch.category)}+when:7d&hl=id&gl=ID&ceid=ID:id`,
         type: 'RSS',
         category: watch.category,
         isActive: true,
@@ -208,7 +252,8 @@ export async function fetchGoogleNewsForWatch(watch: {
     for (const it of freshItems.slice(0, 200)) {
       if (!it.title) continue
       // Use watch.id as part of externalId so same article can match multiple watches
-      const externalId = `gnews:${watch.id}:${it.externalId}`
+      const gnewsRawId = `gnews:${watch.id}:${it.externalId}`
+      const externalId = gnewsRawId.length > 500 ? 'sha256:' + createHash('sha256').update(gnewsRawId).digest('hex') : gnewsRawId
       try {
         const existing = await prisma.listingItem.findFirst({
           where: { scraperJobId: job.id, externalId }
@@ -227,9 +272,7 @@ export async function fetchGoogleNewsForWatch(watch: {
           },
         })
         created++
-      } catch {
-        // duplicate or bad row — skip
-      }
+      } catch (e) { console.error('[ingest-gnews] insert failed:', e instanceof Error ? e.message : e) }
     }
     return created
   } catch {

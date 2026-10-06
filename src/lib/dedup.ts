@@ -1,7 +1,7 @@
 import prisma from './prisma'
 import { buildContentHash } from './crypto'
 
-const DEDUP_WINDOW_HOURS = 72
+const DEDUP_WINDOW_HOURS = 24
 
 /**
  * Cek apakah notifikasi dengan contentHash yang sama sudah pernah dikirim
@@ -43,10 +43,17 @@ export async function createNotificationDeduped(params: {
   matchScore?: number
   price?: number | null
   location?: string | null
+  category?: string | null
 }) {
-  const contentHash = buildContentHash({ title: params.title, price: params.price, location: params.location })
+  const contentHash = buildContentHash({ title: params.title, price: params.price, location: params.location, sourceUrl: params.sourceUrl, category: params.category })
 
-  const isDup = await isDuplicateNotification({ userId: params.userId, contentHash, channel: params.channel })
+  // Dedup judul 7 hari: artikel yang sama dari beberapa feed (URL beda) tidak dikirim ulang
+  const sameTitle = await prisma.notification.findFirst({
+    where: { userId: params.userId, channel: params.channel as any, title: { equals: params.title, mode: 'insensitive' },
+      sentAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, status: { in: ['SENT', 'QUEUED'] as any } },
+    select: { id: true },
+  })
+  const isDup = !!sameTitle || await isDuplicateNotification({ userId: params.userId, contentHash, channel: params.channel })
 
   if (isDup) {
     // Catat sebagai SKIPPED_DUPLICATE untuk metrik kualitas data, tapi tidak dikirim

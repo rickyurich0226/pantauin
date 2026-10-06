@@ -1,4 +1,5 @@
 'use client'
+import { Star, Lock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 
@@ -75,7 +76,7 @@ export default function UpgradePage() {
   return (
     <div>
       <div style={{marginBottom:'28px'}}>
-        <h1 style={{fontSize:'24px',fontWeight:800}}>Upgrade Plan ⭐</h1>
+        <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Upgrade Plan <Star size={20}/></h1>
         <p style={{color:'#5A7090',marginTop:'4px',fontSize:'14px'}}>Plan saat ini: <strong>{currentPlan}</strong> — Pilih plan yang sesuai kebutuhanmu.</p>
       </div>
 
@@ -159,7 +160,7 @@ export default function UpgradePage() {
               </div>
               <button onClick={pay} disabled={loading}
                 style={{width:'100%',padding:'14px',background:'#1560BD',color:'white',border:'none',borderRadius:'12px',fontWeight:700,cursor:'pointer',fontSize:'15px',marginBottom:'12px',opacity:loading?0.7:1}}>
-                {loading?'⏳ Memproses...':'🔒 Bayar Sekarang via Midtrans'}
+                {loading?'Memproses...':<span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><Lock size={14}/> Bayar Sekarang via Midtrans</span>}
               </button>
               <p style={{textAlign:'center',fontSize:'12px',color:'#9EB3C8'}}>🔒 Pembayaran aman diproses oleh <strong>Midtrans</strong> — PCI DSS Level 1</p>
             </div>

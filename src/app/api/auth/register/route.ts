@@ -4,7 +4,9 @@ import prisma from '@/lib/prisma'
 import { rateLimit, RATE_LIMITS } from '@/lib/ratelimit'
 import { registerSchema, validateBody } from '@/lib/validation'
 import { verifyRecaptcha } from '@/lib/recaptcha'
-import { sendEmail, sendWhatsApp } from '@/lib/notifier'
+import { sendEmail } from '@/lib/notifier'
+import { encryptPII } from '@/lib/crypto'
+import { notifySuperadmin, waktuWIB } from '@/lib/superadmin-notify'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
@@ -34,7 +36,8 @@ export async function POST(req: NextRequest) {
     const user = await p.user.create({
       data: {
         name, email, password: hashed,
-        phone: phone || null,
+        phone: phone ? encryptPII(phone) : null,
+        whatsapp: phone ? encryptPII(phone) : null,
         registrationIp: String(ip).split(',')[0].trim(),
         notifChannels: { set: ['EMAIL'] },
         referredBy: refCode || null,
@@ -73,6 +76,17 @@ export async function POST(req: NextRequest) {
       data: { userId: user.id, userEmail: user.email, action: 'USER_REGISTERED', ipAddress: String(ip).split(',')[0].trim() },
     }).catch(() => {})
 
+    // Laporan user baru ke superadmin (Telegram)
+    prisma.user.count().then((total) => notifySuperadmin(
+      '\uD83C\uDD95 <b>User Baru Daftar</b>\n\n' +
+      '\uD83D\uDC64 ' + user.name + '\n' +
+      '\uD83D\uDCE7 ' + user.email + '\n' +
+      '\uD83D\uDCF1 ' + (phone || '-') + '\n' +
+      (refCode ? ('\uD83C\uDF81 Referral: <code>' + refCode + '</code>\n') : '') +
+      '\uD83D\uDC65 Total user: <b>' + total + '</b>\n' +
+      '\uD83D\uDD50 ' + waktuWIB()
+    )).catch(() => {})
+
     // Welcome notification (fire & forget)
     const firstName = name.split(' ')[0]
     const welcomeHtml = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;">'
@@ -98,30 +112,7 @@ export async function POST(req: NextRequest) {
 
     sendEmail(email, '🎉 Selamat datang di Pantau.in, ' + firstName + '!', welcomeHtml).catch(() => {})
 
-    if (phone) {
-      const waPhone = phone.replace(/^0/, '62').replace(/[^0-9]/g, '')
-      const lines = [
-        '*🎉 Selamat datang di Pantau.in, ' + firstName + '!*',
-        '',
-        'Akun kamu sudah aktif dan siap memantau peluang bisnis 24/7! 🚀',
-        '',
-        'Yang bisa kamu pantau:',
-        '📋 Tender & Pengadaan Pemerintah',
-        '🏠 Properti Murah',
-        '🚗 Kendaraan',
-        '💼 Peluang Bisnis',
-        '👔 Lowongan Kerja',
-        '🎓 Beasiswa',
-        '',
-        '*Yuk buat pantauan pertamamu:*',
-        '👉 https://pantau.in/dashboard/watches',
-        '',
-        'Butuh bantuan? Balas pesan ini ya! 😊',
-        '',
-        '_Tim Pantau.in_'
-      ]
-      sendWhatsApp(waPhone, lines.join('\n')).catch(() => {})
-    }
+    // WA sambutan dikirim SETELAH nomor terverifikasi (lihat /api/auth/whatsapp-otp/verify)
 
     return NextResponse.json(user, { status: 201 })
   } catch (err) {

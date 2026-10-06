@@ -35,8 +35,9 @@ export async function GET() {
     prisma.notification.count({ where: { OR: [{ feedback: null }, { feedback: '' }] } }),
     prisma.watchQuery.findMany({
       select: { id: true, name: true, queryText: true, category: true, userId: true,
-        _count: { select: { } } },
-      take: 0,
+        _count: { select: { notifications: true } } },
+      orderBy: { notifications: { _count: 'desc' } },
+      take: 10,
     }),
     prisma.notification.findMany({
       where: { feedback: 'NOT_RELEVANT' },
@@ -57,6 +58,7 @@ export async function GET() {
 
   return NextResponse.json({
     totalUsers,
+    topWatchesByNotif: topWatchesByNotif.map(w => ({ id: w.id, name: w.name, queryText: w.queryText, category: w.category, notifCount: w._count.notifications })),
     usersWithWatch,
     usersWithoutWatch,
     watchActivationRate,

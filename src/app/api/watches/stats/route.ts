@@ -4,6 +4,22 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
+// Data source (ScraperJob) SAMA untuk semua user — di-cache 60 detik supaya tidak
+// query 1000 baris berulang setiap kali user manapun buka halaman watches.
+let sourceStatusCache: { data: any[]; expiresAt: number } | null = null
+async function getSourceStatusCached() {
+  const now = Date.now()
+  if (sourceStatusCache && sourceStatusCache.expiresAt > now) return sourceStatusCache.data
+  const data = await prisma.scraperJob.findMany({
+    where: { isActive: true },
+    select: { source: true, lastRunAt: true, status: true, errorCount: true, itemsFound: true },
+    orderBy: { lastRunAt: 'desc' },
+    take: 1000
+  })
+  sourceStatusCache = { data, expiresAt: now + 60_000 }
+  return data
+}
+
 export async function GET() {
   const s = await getServerSession(authOptions)
   if (!s?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,12 +42,7 @@ export async function GET() {
       where: { watchId: { in: watchIds } },
       _max: { sentAt: true }
     }),
-    prisma.scraperJob.findMany({
-      where: { isActive: true },
-      select: { source: true, lastRunAt: true, status: true, errorCount: true, itemsFound: true },
-      orderBy: { lastRunAt: 'desc' },
-      take: 1000
-    })
+    getSourceStatusCached()
   ])
 
   const stats: Record<string, any> = {}

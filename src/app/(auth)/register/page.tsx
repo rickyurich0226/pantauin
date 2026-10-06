@@ -24,7 +24,7 @@ function RegisterForm() {
     // Auto-login setelah register berhasil
     const login = await signIn('credentials', { email: form.email, password: form.password, redirect: false })
     if (login?.error) { router.push('/login?registered=1'); return }
-    router.push('/dashboard?onboarding=1')
+    router.push(form.phone ? '/verify-whatsapp?next=' + encodeURIComponent('/dashboard?onboarding=1') : '/dashboard?onboarding=1')
   }
 
   const inp = {width:'100%',padding:'12px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit'} as React.CSSProperties

@@ -21,7 +21,7 @@ export default function CompleteProfilePage() {
     const data = await res.json()
     if (res.ok) {
       await update()
-      router.push('/dashboard?onboarding=1')
+      router.push('/verify-whatsapp?next=' + encodeURIComponent('/dashboard?onboarding=1'))
     } else {
       setError(data.error || 'Gagal menyimpan')
       setLoading(false)

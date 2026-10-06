@@ -8,6 +8,10 @@ RUN --mount=type=cache,target=/root/.npm npm install --legacy-peer-deps --no-aud
 
 COPY . .
 RUN npx prisma generate
+ARG NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+ARG NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION
+ENV NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=$NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+ENV NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION=$NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION
 RUN --mount=type=cache,target=/app/.next/cache npm run build
 
 FROM node:20-alpine AS runner

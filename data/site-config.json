@@ -1,9 +1,9 @@
 {
   "site_name": "Pantau.in",
-  "site_tagline": "Internet Dipantau. Peluang Dikirim ke WA Kamu.",
+  "site_tagline": "Internet Dipantau. Infromasi dan Peluang Dikirim ke WA Kamu.",
   "contact_email": "pantau.inofficial@gmail.com",
   "contact_wa": "https://wa.me/6287890144122",
-  "contact_wa_label": "@pantauin",
+  "contact_wa_label": "@pantau.in",
   "telegram_channel": "https://t.me/pantau_inofficialbot",
   "footer_fitur": [
     "Monitoring AI Real-time",
@@ -32,7 +32,7 @@
   ],
   "free_max_watches": 3,
   "free_max_notifs": 30,
-  "match_threshold": 0.72,
+  "match_threshold": 0.2,
   "maintenance_mode": false,
   "allow_registration": true,
   "referral_enabled": true,

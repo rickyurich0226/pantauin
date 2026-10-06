@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+# [pantau-tg] token terpusat di /etc/pantau/telegram.env
+import os as _tg_os
+def _tg_token():
+    t = _tg_os.environ.get("TG_BOT_TOKEN")
+    if t:
+        return t
+    try:
+        for _l in open("/etc/pantau/telegram.env"):
+            if _l.startswith("TG_BOT_TOKEN="):
+                return _l.split("=", 1)[1].strip().strip('"').strip("'")
+    except Exception:
+        pass
+    return ""
+_TG_TOKEN = _tg_token()
 """
 auto-discover-rss.py — Pantau.in Source Discovery Bot
 Fitur:
@@ -11,11 +25,13 @@ Fitur:
 """
 import subprocess, urllib.request, urllib.error, urllib.parse, xml.etree.ElementTree as ET
 from datetime import datetime
+YEAR = datetime.now().year
+YEAR_STR = str(YEAR)
 
 CANDIDATES_FILE = "/var/www/pantau.in/scripts/rss-candidates.txt"
 LOG_FILE        = "/var/www/pantau.in/scripts/auto-discover.log"
 AUDIT_FILE      = "/var/www/pantau.in/scripts/audit-trail.log"
-BOT_TOKEN       = "8979371607:AAGQXALkQKMX0laqtiF9BEQDGsq0zwROxAI"
+BOT_TOKEN       = _TG_TOKEN
 CHAT_ID         = "901470999"
 
 # Keyword yang menandakan larangan crawling/scraping
@@ -195,6 +211,8 @@ def auto_disable_errored():
     result = psql("""
         UPDATE "ScraperJob" SET "isActive" = false, "updatedAt" = NOW()
         WHERE "errorCount" > 10 AND "isActive" = true
+          AND coalesce("lastError",'') !~* '(503|429)'
+          AND EXISTS (SELECT 1 FROM "ScraperJob" j2 WHERE j2.status = 'idle' AND j2."lastError" IS NULL AND j2."lastRunAt" > NOW() - INTERVAL '1 hour')
         RETURNING source;
     """)
     return result
@@ -245,7 +263,7 @@ def discover_candidates():
     Hanya menambah yang belum ada — tidak mengubah entry existing.
     Return: jumlah kandidat baru yang ditambahkan.
     """
-    BASE = "https://news.google.com/rss/search?q={q}&hl=id&gl=ID&ceid=ID:id"
+    BASE = "https://news.google.com/rss/search?q={q}+when:7d&hl=id&gl=ID&ceid=ID:id"
     existing_urls = load_existing_urls()
     new_entries = []
 
@@ -266,8 +284,8 @@ def discover_candidates():
         ("tender+teknologi+informasi+pemerintah", "Tender IT Pemerintah"),
         ("tender+konstruksi+jembatan+jalan", "Tender Konstruksi Jalan"),
         ("tender+alat+kesehatan+pemerintah", "Tender Alkes"),
-        ("pengadaan+seragam+dinas+2025", "Pengadaan Seragam Dinas"),
-        ("tender+makan+bergizi+gratis+2025", "Tender MBG 2025"),
+        ("pengadaan+seragam+dinas+"+YEAR_STR, "Pengadaan Seragam Dinas"),
+        ("tender+makan+bergizi+gratis+"+YEAR_STR, "Tender MBG "+YEAR_STR),
     ]:
         make(q, "TENDER", f"Google News — {name}")
 
@@ -277,53 +295,53 @@ def discover_candidates():
         make(f"tanah+dijual+{kota}", "PROPERTI", f"Google News — Tanah {kota}")
 
     for q, name in [
-        ("lelang+rumah+bank+BTN+2025", "Lelang Rumah BTN"),
-        ("KPR+subsidi+FLPP+2025", "KPR FLPP 2025"),
+        ("lelang+rumah+bank+BTN+"+YEAR_STR, "Lelang Rumah BTN"),
+        ("KPR+subsidi+FLPP+"+YEAR_STR, "KPR FLPP "+YEAR_STR),
         ("rumah+dijual+bawah+500+juta", "Rumah di Bawah 500 Juta"),
         ("properti+dijual+pinggir+tol", "Properti Pinggir Tol"),
     ]:
         make(q, "PROPERTI", f"Google News — {name}")
 
     for q, name in [
-        ("motor+bekas+murah+2025", "Motor Bekas Murah"),
+        ("motor+bekas+murah+"+YEAR_STR, "Motor Bekas Murah"),
         ("lelang+kendaraan+dinas+pemerintah", "Lelang Kendaraan Dinas"),
         ("truk+bekas+dijual+Indonesia", "Truk Bekas"),
         ("alat+berat+bekas+dijual", "Alat Berat Bekas"),
         ("bus+bekas+dijual+Indonesia", "Bus Bekas"),
         ("pickup+bekas+murah", "Pickup Bekas Murah"),
-        ("motor+listrik+murah+2025", "Motor Listrik Murah"),
+        ("motor+listrik+murah+"+YEAR_STR, "Motor Listrik Murah"),
         ("mobil+listrik+bekas+Indonesia", "Mobil Listrik Bekas"),
     ]:
         make(q, "KENDARAAN", f"Google News — {name}")
 
     for q, name in [
-        ("franchise+murah+modal+kecil+2025", "Franchise Murah 2025"),
+        ("franchise+murah+modal+kecil+"+YEAR_STR, "Franchise Murah "+YEAR_STR),
         ("peluang+usaha+modal+kecil+menguntungkan", "Usaha Modal Kecil"),
         ("distributor+reseller+produk+FMCG", "Distributor FMCG"),
-        ("UMKM+binaan+pemerintah+2025", "UMKM Pemerintah"),
+        ("UMKM+binaan+pemerintah+"+YEAR_STR, "UMKM Pemerintah"),
         ("agen+tunggal+produk+indonesia", "Agen Tunggal"),
-        ("jualan+online+dropship+2025", "Dropship 2025"),
+        ("jualan+online+dropship+"+YEAR_STR, "Dropship "+YEAR_STR),
         ("bisnis+ekspor+UMKM+indonesia", "Ekspor UMKM"),
     ]:
         make(q, "BISNIS", f"Google News — {name}")
 
     for q, name in [
-        ("obligasi+ritel+ORI+pemerintah+2025", "ORI 2025"),
-        ("IPO+saham+perdana+2025+Indonesia", "IPO Saham 2025"),
+        ("obligasi+ritel+ORI+pemerintah+"+YEAR_STR, "ORI "+YEAR_STR),
+        ("IPO+saham+perdana+"+YEAR_STR+"+Indonesia", "IPO Saham "+YEAR_STR),
         ("reksa+dana+terbaik+return+tinggi", "Reksa Dana Terbaik"),
-        ("deposito+bunga+tinggi+2025", "Deposito Bunga Tinggi"),
-        ("P2P+lending+legal+OJK+2025", "P2P Lending OJK"),
-        ("sukuk+tabungan+pemerintah+2025", "Sukuk Tabungan"),
-        ("saham+dividen+2025+IDX", "Saham Dividen IDX"),
+        ("deposito+bunga+tinggi+"+YEAR_STR, "Deposito Bunga Tinggi"),
+        ("P2P+lending+legal+OJK+"+YEAR_STR, "P2P Lending OJK"),
+        ("sukuk+tabungan+pemerintah+"+YEAR_STR, "Sukuk Tabungan"),
+        ("saham+dividen+"+YEAR_STR+"+IDX", "Saham Dividen IDX"),
     ]:
         make(q, "INVESTASI", f"Google News — {name}")
 
     for q, name in [
         ("lowongan+kerja+startup+teknologi+indonesia", "Loker Startup Tech"),
-        ("magang+mahasiswa+berbayar+2025", "Magang Berbayar 2025"),
+        ("magang+mahasiswa+berbayar+"+YEAR_STR, "Magang Berbayar "+YEAR_STR),
         ("lowongan+kerja+Kalimantan+Timur", "Loker Kalimantan"),
         ("lowongan+kerja+Papua+Sulawesi", "Loker Papua Sulawesi"),
-        ("rekrutmen+BUMN+2025", "Rekrutmen BUMN"),
+        ("rekrutmen+BUMN+"+YEAR_STR, "Rekrutmen BUMN"),
         ("lowongan+kerja+remote+WFH+indonesia", "Loker Remote WFH"),
         ("lowongan+freelance+proyek+indonesia", "Freelance Proyek"),
     ]:

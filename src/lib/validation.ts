@@ -7,7 +7,7 @@ export const registerSchema = z.object({
   name: z.string().trim().min(2, 'Nama minimal 2 karakter').max(100, 'Nama maksimal 100 karakter'),
   email: z.string().trim().toLowerCase().email('Format email tidak valid').max(255),
   password: z.string().min(8, 'Password minimal 8 karakter').max(128, 'Password maksimal 128 karakter'),
-  phone: z.string().trim().regex(/^(\+62|62|0)8[1-9][0-9]{6,11}$/, 'Format nomor HP tidak valid').optional().or(z.literal('')),
+  phone: z.string().trim().min(1, 'Nomor WhatsApp wajib diisi').regex(/^(\+62|62|0)8[1-9][0-9]{6,11}$/, 'Format nomor HP tidak valid'),
 })
 
 export const loginSchema = z.object({

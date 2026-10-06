@@ -48,27 +48,27 @@ Masalahnya, ribuan orang memantau platform yang sama — OLX, Rumah123, Lamudi, 
 Jika kamu masih mengecek manual 1-2 kali sehari, kamu sudah kalah start sebelum berlomba.`],
           ['Strategi Monitoring Properti yang Efektif', `Ada tiga level strategi yang bisa kamu terapkan:
 
-**Level 1 — Monitor kata kunci spesifik**
+<strong style={{color:"#0D1B2A"}}>Level 1 — Monitor kata kunci spesifik</strong>
 Contoh: "rumah hook Depok SHM di bawah 800 juta". Semakin spesifik, semakin sedikit noise, tapi juga semakin sedikit hasil. Cocok jika kamu sudah tahu persis apa yang dicari.
 
-**Level 2 — Monitor area + budget**
+<strong style={{color:"#0D1B2A"}}>Level 2 — Monitor area + budget</strong>
 Contoh: "properti Bekasi maksimal 1 miliar". Lebih luas, tapi tetap terarah. Kamu akan mendapat lebih banyak pilihan dan bisa memilih yang terbaik.
 
-**Level 3 — Monitor dengan filter negatif**
+<strong style={{color:"#0D1B2A"}}>Level 3 — Monitor dengan filter negatif</strong>
 Tambahkan kata kunci yang ingin dikecualikan seperti "sengketa", "banjir", "tanpa SHM". Ini memastikan notifikasi yang masuk sudah tersaring dari properti bermasalah.`],
           ['Setup Monitoring Properti di Pantau.in', `Pantau.in memindai listing properti dari berbagai platform setiap 5 menit. Begini cara setupnya:
 
-**1. Buat watch query kategori Properti**
+<strong style={{color:"#0D1B2A"}}>1. Buat watch query kategori Properti</strong>
 Tulis deskripsi alami seperti: "rumah minimalis 3 kamar Tangerang Selatan maksimal 1,2 miliar sertifikat SHM"
 
-**2. Aktifkan filter lanjutan**
+<strong style={{color:"#0D1B2A"}}>2. Aktifkan filter lanjutan</strong>
 - Wajib Ada: "SHM" (untuk memastikan ada sertifikat)
 - Kecualikan: "banjir, sengketa, over kredit bermasalah"
 
-**3. Set notifikasi real-time**
+<strong style={{color:"#0D1B2A"}}>3. Set notifikasi real-time</strong>
 Untuk properti, real-time adalah kunci. Setiap menit berharga.
 
-**4. Aktifkan WhatsApp**
+<strong style={{color:"#0D1B2A"}}>4. Aktifkan WhatsApp</strong>
 Notifikasi WA lebih cepat dibaca dibanding email. Upgrade ke Pro untuk akses fitur ini.`],
           ['Tips Negosiasi Setelah Dapat Notifikasi', `Kecepatan respons adalah kunci. Setelah dapat notifikasi:
 

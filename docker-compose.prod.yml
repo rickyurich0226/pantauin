@@ -1,0 +1,66 @@
+services:
+  pantau_web:
+    build: .
+    container_name: pantau_web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      #- MIDTRANS_SERVER_KEY=<diisi lewat .env>
+      #- MIDTRANS_CLIENT_KEY=<diisi lewat .env>
+     # - MIDTRANS_IS_PRODUCTION=true
+     # - NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=<diisi lewat .env>
+     # - NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION=true
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pantau_postgres:5432/${POSTGRES_DB}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - CRON_SECRET=${CRON_SECRET}
+      - ENCRYPTION_KEY=da057b8e46db91d1ab4d4eb0785c380945cf1c0aaf1075e0c5613a449ef3778e
+      - SUPERADMIN_EMAIL=${SUPERADMIN_EMAIL}
+      - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=pantau.inofficial@gmail.com
+      - SMTP_PASS=sjjdrrjjswnwkrpp
+      - WA_PHONE_NUMBER_ID=${WA_PHONE_NUMBER_ID:-}
+      - WA_ACCESS_TOKEN=${WA_ACCESS_TOKEN:-}
+      - TELEGRAM_BOT_TOKEN=8843833635:AAHW91izFg6fo1O2cL166r8sHs6n360V13k
+    volumes:
+      - ./app-secrets.env:/app/.env
+      - ./app-secrets.env:/app/.env.local
+      - ./data:/app/data
+      - nextjs_cache:/app/.next/cache
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      pantau_postgres:
+        condition: service_healthy
+    networks:
+      - pantau_net
+
+  pantau_postgres:
+    image: postgres:16-alpine
+    container_name: pantau_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - pantau_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pantau_net
+
+volumes:
+  pantau_pgdata:
+  nextjs_cache:
+
+networks:
+  pantau_net:
+    driver: bridge

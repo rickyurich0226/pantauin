@@ -9,7 +9,7 @@ const PROVINCES = [
 ]
 
 const PROFILES = [
-  {k:'KONTRAKTOR',i:'🏗️',l:'Kontraktor / Rekanan',d:'Cari tender pemerintah & swasta',cat:'TENDER',
+  {k:'KONTRAKTOR',i:'🏗️',l:'Kontraktor / Rekanan',d:'Cari tender pengadaan & swasta',cat:'TENDER',
    keyword:(loc:string)=>`tender pengadaan ${loc}`,nameHint:'Pantau Tender Pengadaan',
    tip:'Pilih lokasi di mana tim kamu bisa mobilisasi. Tender luar pulau biasanya butuh biaya mobilisasi tinggi.',
    chips:(loc:string)=>[`tender jalan ${loc}`,`pengadaan IT dinas ${loc}`,`proyek gedung APBD ${loc}`,`tender air bersih PDAM ${loc}`]},
@@ -41,8 +41,8 @@ const PROFILES = [
    keyword:(loc:string)=>`beasiswa ${loc}`,nameHint:'Pantau Beasiswa',
    tip:'Sertakan jenjang pendidikan dan bidang studi untuk hasil yang lebih relevan.',
    chips:(loc:string)=>[`beasiswa S1 ${loc}`,`beasiswa S2 luar negeri`,`LPDP 2025`,`beasiswa kuliah gratis`]},
-  {k:'BANTUAN',i:'🤝',l:'Penerima Bantuan',d:'Pantau bantuan & subsidi pemerintah',cat:'BANTUAN',
-   keyword:(loc:string)=>`bantuan pemerintah ${loc}`,nameHint:'Pantau Bantuan',
+  {k:'BANTUAN',i:'🤝',l:'Penerima Bantuan',d:'Pantau bantuan & subsidi',cat:'BANTUAN',
+   keyword:(loc:string)=>`bantuan subsidi ${loc}`,nameHint:'Pantau Bantuan',
    tip:'Sertakan lokasi untuk bantuan yang tepat sasaran di daerah kamu.',
    chips:(loc:string)=>[`KUR usaha ${loc}`,`BLT subsidi 2025`,`bantuan UMKM ${loc}`,`PKH 2025`]},
   {k:'LAINNYA',i:'🔍',l:'Lainnya',d:'Saya punya kebutuhan spesifik',cat:'BISNIS',

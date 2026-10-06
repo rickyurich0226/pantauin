@@ -72,10 +72,12 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const p = req.nextUrl.pathname
         const publicPaths = ['/','/login','/register','/forgot-password','/reset-password','/syarat-dan-ketentuan','/kebijakan-privasi','/faq','/pusat-bantuan','/about','/sitemap.xml','/robots.txt','/cara-kerja','/keamanan','/blog']
+        const publicPrefixesExtra = ['/peluang']
         const publicPrefixes = ['/fitur/','/blog/']
 
-        const publicApi = ['/api/auth','/api/midtrans/webhook','/api/webhooks','/api/health','/api/superadmin/content','/api/cron']
+        const publicApi = ['/api/auth','/api/midtrans/webhook','/api/webhooks','/api/health','/api/superadmin/content','/api/cron','/api/track','/api/public','/api/n']
         if (publicPaths.includes(p)) return true
+        if (publicPrefixesExtra.some(x => p.startsWith(x))) return true
         if (publicPrefixes.some(x => p.startsWith(x))) return true
         if (p.startsWith('/blog')) return true
         if (publicApi.some(x => p.startsWith(x))) return true

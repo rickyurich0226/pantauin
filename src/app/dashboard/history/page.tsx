@@ -1,10 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { FileText, Home, Car, Briefcase, TrendingUp, Users, GraduationCap, HeartHandshake, Target, Calendar, BarChart3 } from 'lucide-react'
 
 export default function HistoryPage() {
   const [notifs, setNotifs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const CAT_ICONS: Record<string,string> = {TENDER:'📋',PROPERTI:'🏠',KENDARAAN:'🚗',BISNIS:'💼',INVESTASI:'📈',LOWONGAN:'👔',BEASISWA:'🎓',BANTUAN:'🤝'}
+  const CAT_ICONS: Record<string,any> = {TENDER:FileText,PROPERTI:Home,KENDARAAN:Car,BISNIS:Briefcase,INVESTASI:TrendingUp,LOWONGAN:Users,BEASISWA:GraduationCap,BANTUAN:HeartHandshake}
 
   useEffect(()=>{
     fetch('/api/notifications?limit=100').then(r=>r.json()).then(d=>{
@@ -16,25 +17,25 @@ export default function HistoryPage() {
   return (
     <div>
       <div style={{marginBottom:'24px'}}>
-        <h1 style={{fontSize:'24px',fontWeight:800}}>Riwayat Peluang 📊</h1>
+        <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Riwayat Peluang <BarChart3 size={20}/></h1>
         <p style={{color:'#5A7090',marginTop:'4px',fontSize:'14px'}}>{notifs.length} peluang yang sudah ditemukan</p>
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'16px',marginBottom:'28px'}}>
-        {[['Total Peluang',notifs.length,'🎯'],['Minggu Ini',notifs.filter(n=>new Date(n.sentAt)>new Date(Date.now()-7*24*60*60*1000)).length,'📅'],
-          ['Rata-rata Skor',notifs.length?`${Math.round(notifs.reduce((a,n)=>a+n.matchScore,0)/notifs.length*100)}%`:'—','🎯'],
-          ['Kategori Terbanyak',notifs.length?Object.entries(notifs.reduce((a:any,n:any)=>{const c=n.watch?.category||'OTHER';a[c]=(a[c]||0)+1;return a},{})).sort((a:any,b:any)=>b[1]-a[1])[0]?.[0]||'—':'—','📋']
-        ].map(([l,v,i])=>(
+        {[['Total Peluang',notifs.length,Target],['Minggu Ini',notifs.filter(n=>new Date(n.sentAt)>new Date(Date.now()-7*24*60*60*1000)).length,Calendar],
+          ['Rata-rata Skor',notifs.length?`${Math.round(notifs.reduce((a,n)=>a+n.matchScore,0)/notifs.length*100)}%`:'—',Target],
+          ['Kategori Terbanyak',notifs.length?Object.entries(notifs.reduce((a:any,n:any)=>{const c=n.watch?.category||'OTHER';a[c]=(a[c]||0)+1;return a},{})).sort((a:any,b:any)=>b[1]-a[1])[0]?.[0]||'—':'—',FileText]
+        ].map(([l,v,Icon]:any)=>(
           <div key={String(l)} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'14px',padding:'18px'}}>
             <p style={{fontSize:'12px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:'6px'}}>{l}</p>
-            <p style={{fontSize:'24px',fontWeight:800}}>{String(i)} {String(v)}</p>
+            <p style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}><Icon size={20} color="#1560BD"/> {String(v)}</p>
           </div>
         ))}
       </div>
 
-      {loading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>⏳ Memuat riwayat...</div>:
+      {loading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>Memuat riwayat...</div>:
       notifs.length===0?(<div style={{background:'white',border:'2px dashed #DDE5EF',borderRadius:'16px',padding:'48px',textAlign:'center'}}>
-        <div style={{fontSize:'48px',marginBottom:'12px'}}>📊</div>
+        <div style={{marginBottom:'12px',display:'flex',justifyContent:'center'}}><BarChart3 size={44} color="#DDE5EF"/></div>
         <h3 style={{fontWeight:700,marginBottom:'8px'}}>Riwayat masih kosong</h3>
         <p style={{color:'#5A7090',fontSize:'14px'}}>Peluang yang sudah dibaca akan tampil di sini.</p>
       </div>):(
@@ -54,7 +55,7 @@ export default function HistoryPage() {
                     <p style={{fontWeight:600,fontSize:'14px',marginBottom:'2px'}}>{n.title}</p>
                     {n.sourceUrl&&<a href={n.sourceUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:'12px',color:'#1560BD'}}>Lihat sumber →</a>}
                   </td>
-                  <td style={{padding:'12px 16px'}}><span style={{fontSize:'13px'}}>{CAT_ICONS[n.watch?.category]||'🎯'} {n.watch?.category||'—'}</span></td>
+                  <td style={{padding:'12px 16px'}}><span style={{fontSize:'13px',display:'inline-flex',alignItems:'center',gap:'4px'}}>{(()=>{const CI=CAT_ICONS[n.watch?.category]||Target; return <CI size={13}/>})()}{n.watch?.category||'—'}</span></td>
                   <td style={{padding:'12px 16px'}}>
                     <span style={{fontSize:'12px',fontWeight:700,background:n.matchScore>=0.8?'#DCFCE7':n.matchScore>=0.6?'#FEF3C7':'#FEE2E2',color:n.matchScore>=0.8?'#166534':n.matchScore>=0.6?'#92400E':'#991B1B',padding:'3px 8px',borderRadius:'100px'}}>
                       {Math.round(n.matchScore*100)}%

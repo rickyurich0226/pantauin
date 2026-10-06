@@ -48,50 +48,50 @@ Selain pengadaan pemerintah, ada juga pengadaan dari BUMN, BUMD, dan perusahaan 
 Tantangannya: informasi tersebar di ratusan platform, format berbeda-beda, dan update terjadi setiap saat. Tanpa sistem monitoring yang baik, kontraktor bisa melewatkan peluang besar.`],
           ['Jenis-Jenis Platform Pengadaan yang Perlu Dipantau', `Untuk mendapat gambaran menyeluruh, kamu perlu memantau beberapa kategori platform:
 
-**Portal LPSE Pemerintah**
+<strong style={{color:"#0D1B2A"}}>Portal LPSE Pemerintah</strong>
 Setiap kementerian, lembaga, dan pemerintah daerah memiliki LPSE sendiri. Contoh: LPSE Kementerian PUPR, LPSE Provinsi DKI Jakarta, LPSE Kabupaten Bogor.
 
-**SPSE (Sistem Pengadaan Secara Elektronik)**
+<strong style={{color:"#0D1B2A"}}>SPSE (Sistem Pengadaan Secara Elektronik)</strong>
 Platform terintegrasi dari LKPP yang menghubungkan berbagai LPSE. Bisa diakses via lpse.lkpp.go.id.
 
-**Portal Pengadaan BUMN**
+<strong style={{color:"#0D1B2A"}}>Portal Pengadaan BUMN</strong>
 PLN, Pertamina, Telkom, dan BUMN lainnya memiliki portal pengadaan sendiri dengan nilai kontrak yang besar.
 
-**Marketplace B2B**
+<strong style={{color:"#0D1B2A"}}>Marketplace B2B</strong>
 Platform seperti Tokopedia Government, Blibli for Business, dan platform B2B lainnya juga memuat pengadaan dari berbagai instansi.`],
           ['Strategi Monitoring yang Efektif', `Tidak semua pengadaan relevan untuk kamu. Monitoring yang efektif dimulai dari mendefinisikan scope dengan jelas:
 
-**1. Tentukan bidang pekerjaan utama**
+<strong style={{color:"#0D1B2A"}}>1. Tentukan bidang pekerjaan utama</strong>
 Fokus pada 2-3 bidang yang paling kamu kuasai. Lebih baik menang sedikit tender dengan proposal kuat daripada ikut banyak tender tapi persiapan asal-asalan.
 
-**2. Tentukan area geografis**
+<strong style={{color:"#0D1B2A"}}>2. Tentukan area geografis</strong>
 Mulai dari area yang bisa kamu layani dengan optimal. Ekspansi ke area baru setelah kapasitas memungkinkan.
 
-**3. Tentukan range nilai kontrak**
+<strong style={{color:"#0D1B2A"}}>3. Tentukan range nilai kontrak</strong>
 Sesuaikan dengan kapasitas bonding, modal kerja, dan SDM yang kamu miliki.
 
-**4. Monitor kompetitor**
+<strong style={{color:"#0D1B2A"}}>4. Monitor kompetitor</strong>
 Pantau juga nama perusahaan kompetitor di portal pengadaan untuk mempelajari di mana mereka aktif.`],
           ['Cara Setup di Pantau.in untuk Pengadaan', `Pantau.in mengagregasi informasi pengadaan dari berbagai sumber. Berikut contoh setup untuk kontraktor konstruksi:
 
-**Watch Query 1 — Konstruksi Gedung:**
+<strong style={{color:"#0D1B2A"}}>Watch Query 1 — Konstruksi Gedung:</strong>
 "pembangunan gedung kantor atau sekolah atau puskesmas"
 Filter Wajib Ada: "konstruksi, pembangunan"
 Filter Kecualikan: "konsultansi, perencanaan, pengawasan"
 
-**Watch Query 2 — Infrastruktur:**
+<strong style={{color:"#0D1B2A"}}>Watch Query 2 — Infrastruktur:</strong>
 "pembangunan jalan atau jembatan atau drainase kabupaten"
 
-**Watch Query 3 — Pengadaan Material:**
+<strong style={{color:"#0D1B2A"}}>Watch Query 3 — Pengadaan Material:</strong>
 "pengadaan material bangunan semen besi beton"
 
 Dengan 3 watch query sekaligus (tersedia di plan Free), kamu sudah bisa memantau berbagai jenis pengadaan yang relevan.`],
           ['Mengoptimalkan Respons Setelah Dapat Notifikasi', `Kecepatan dan kualitas respons menentukan peluang menang:
 
-1. **Baca dokumen pengadaan dalam 1 jam pertama** — pastikan kamu memenuhi semua persyaratan sebelum investasi waktu lebih lanjut
-2. **Cek riwayat pemenang** — pelajari siapa yang biasa menang di instansi tersebut dan dengan harga berapa
-3. **Siapkan template dokumen** — HPS, dokumen kualifikasi, dan proposal teknis yang bisa disesuaikan cepat
-4. **Bangun relasi dengan PPK** — hubungan yang baik dengan Pejabat Pembuat Komitmen sangat membantu dalam tender yang kompetitif`],
+1. <strong style={{color:"#0D1B2A"}}>Baca dokumen pengadaan dalam 1 jam pertama</strong> — pastikan kamu memenuhi semua persyaratan sebelum investasi waktu lebih lanjut
+2. <strong style={{color:"#0D1B2A"}}>Cek riwayat pemenang</strong> — pelajari siapa yang biasa menang di instansi tersebut dan dengan harga berapa
+3. <strong style={{color:"#0D1B2A"}}>Siapkan template dokumen</strong> — HPS, dokumen kualifikasi, dan proposal teknis yang bisa disesuaikan cepat
+4. <strong style={{color:"#0D1B2A"}}>Bangun relasi dengan PPK</strong> — hubungan yang baik dengan Pejabat Pembuat Komitmen sangat membantu dalam tender yang kompetitif`],
         ].map(([judul, isi]) => (
           <section key={String(judul)} style={{marginBottom:'32px'}}>
             <h2 style={{fontSize:'22px',fontWeight:700,color:'#0D1B2A',marginBottom:'16px'}}>{judul}</h2>

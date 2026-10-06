@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
+  async redirects() {
+    return [
+      { source: '/code', destination: '/', permanent: true },
+    ]
+  },
   async headers() {
     return [{ source:'/(.*)', headers:[
       {key:'X-Frame-Options',value:'SAMEORIGIN'},

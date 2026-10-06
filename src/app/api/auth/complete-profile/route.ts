@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       phone: encryptPII(phone),
       whatsapp: encryptPII(whatsapp),
       needsProfile: false,
+      whatsappVerified: false,
     }
   })
 

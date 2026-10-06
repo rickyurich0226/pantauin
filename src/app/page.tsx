@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { Bot, Zap, Search, Smartphone, MapPin, Sparkles, Target, Mail, MessageCircle, Send, Rocket } from 'lucide-react'
 
 const DEFAULT = {
   site_name:'Pantau.in', contact_email:'pantau.inofficial@gmail.com',
@@ -14,6 +15,9 @@ const DEFAULT = {
 const safeArr = (a:any):string[] => Array.isArray(a)?a:[]
 
 const LOGO = () => <img src="/logo.png" alt="pantau.in" width={36} height={36} style={{objectFit:"contain"}}/>
+// Versi khusus dipakai di atas background gelap — dikasih badge putih rounded
+// supaya logo tetap kontras & terbaca, apapun warna asli file logo.png-nya.
+const LOGO_ON_DARK = () => <div style={{background:'white',borderRadius:'10px',padding:'4px',display:'flex',alignItems:'center',justifyContent:'center',width:'40px',height:'40px'}}><img src="/logo.png" alt="pantau.in" width={30} height={30} style={{objectFit:"contain"}}/></div>
 
 function RoiCalculator() {
   const [tenderVal, setTenderVal] = useState(500)
@@ -65,6 +69,10 @@ function RoiCalculator() {
 export default function Home() {
   const [cfg, setCfg] = useState(DEFAULT)
   const [mobileMenu, setMobileMenu] = useState(false)
+  const [publicStats, setPublicStats] = useState({ activeSources: 0, categoryCount: 0, notificationsSent: 0 })
+  useEffect(()=>{
+    fetch('/api/public/stats').then(r=>r.ok?r.json():null).then(d=>{ if(d) setPublicStats(d) }).catch(()=>{})
+  },[])
   useEffect(()=>{
     fetch('/api/superadmin/content').then(r=>r.ok?r.json():null).then(d=>{
       if(!d||typeof d!=='object') return
@@ -91,8 +99,12 @@ export default function Home() {
   const legalHref:Record<string,string>={'Syarat & Ketentuan':'/syarat-dan-ketentuan','Kebijakan Privasi':'/kebijakan-privasi','FAQ':'/faq','Pusat Bantuan':'/pusat-bantuan'}
 
   return (
-    <div style={{minHeight:'100vh',fontFamily:'Inter,sans-serif',color:'#0D1B2A',background:'#F0F4F9',width:'100%',overflowX:'hidden'}}>
-      <style>{`@keyframes radar{0%{opacity:.7;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}a{text-decoration:none}@media(max-width:768px){.desktop-nav{display:none!important}.mobile-nav-btn{display:flex!important}}`}</style>
+    <div style={{minHeight:'100vh',fontFamily:'Inter,sans-serif',color:'#0D1B2A',background:'#F0F4F9',width:'100%',maxWidth:'100vw',overflowX:'hidden',position:'relative'}}>
+      <style>{`
+        .feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(13,27,42,0.08)}
+        .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.22)}
+      `}</style>
+      <style>{`@keyframes radar{0%{opacity:.7;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}a{text-decoration:none}@media(max-width:768px){.desktop-nav{display:none!important}.mobile-nav-btn{display:flex!important}}html,body{width:100%!important;max-width:100vw!important;overflow-x:hidden!important;}*{max-width:100%;}section,nav,footer,div{max-width:100vw;}`}</style>
 
       {/* NAVBAR */}
       <nav style={{position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,0.96)',backdropFilter:'blur(12px)',borderBottom:'1px solid #DDE5EF'}}>
@@ -121,7 +133,7 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{background:'linear-gradient(135deg,#0D1B2A 0%,#1560BD 55%,#0F6E56 100%)',padding:'clamp(60px,10vw,110px) clamp(16px,4vw,40px) clamp(80px,10vw,130px)',textAlign:'center',position:'relative',overflow:'hidden'}}>
-        <div style={{position:'absolute',top:'50%',right:'6%',transform:'translateY(-50%)',pointerEvents:'none'}}>
+        <div style={{position:'absolute',top:'50%',right:'6%',transform:'translateY(-50%)',pointerEvents:'none',overflow:'hidden',maxWidth:'300px'}}>
           {[70,140,220,300].map((s,i)=><div key={i} style={{position:'absolute',top:'50%',left:'50%',width:s,height:s,borderRadius:'50%',border:'1.5px solid rgba(0,194,255,0.3)',animation:`radar 3s ${i*0.8}s infinite`}}/>)}
         </div>
         <div style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'100px',padding:'7px 18px',marginBottom:'28px',fontSize:'13px',color:'rgba(255,255,255,0.9)',fontWeight:500}}>
@@ -130,13 +142,13 @@ export default function Home() {
         <h1 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(36px,6vw,66px)',fontWeight:800,color:'white',lineHeight:1.12,marginBottom:'20px'}}>
           Temukan Peluang<br/><span style={{color:'#00C2FF'}}>Sebelum Orang Lain</span><br/>Menemukannya.
         </h1>
-        <p style={{fontSize:'18px',color:'rgba(255,255,255,0.75)',maxWidth:'560px',margin:'0 auto 40px',lineHeight:1.7}}>Pantau tender, properti, kendaraan, dan peluang bisnis dari 2.400+ sumber. Notifikasi otomatis via WhatsApp, Telegram, atau Email.</p>
+        <p style={{fontSize:'18px',color:'rgba(255,255,255,0.75)',maxWidth:'560px',margin:'0 auto 40px',lineHeight:1.7}}>Pantau tender, properti, kendaraan, dan peluang bisnis dari {publicStats.activeSources > 0 ? `${publicStats.activeSources}+` : 'ratusan'} sumber. Notifikasi otomatis via WhatsApp, Telegram, atau Email.</p>
         <div style={{display:'flex',gap:'14px',justifyContent:'center',flexWrap:'wrap',marginBottom:'64px'}}>
-          <a href="/register" style={{background:'white',color:'#1560BD',fontWeight:700,padding:'15px 36px',borderRadius:'12px',fontSize:'16px',boxShadow:'0 4px 20px rgba(0,0,0,0.15)'}}>🚀 Mulai Gratis — Sekarang</a>
+          <a href="/register" className="cta-btn" style={{background:'white',color:'#1560BD',fontWeight:700,padding:'15px 36px',borderRadius:'12px',fontSize:'16px',boxShadow:'0 4px 20px rgba(0,0,0,0.15)',display:'inline-flex',alignItems:'center',gap:'8px',transition:'transform .2s, box-shadow .2s'}}><Rocket size={18}/> Mulai Gratis — Sekarang</a>
           <a href="#cara-kerja" style={{background:'rgba(255,255,255,0.12)',color:'white',fontWeight:600,padding:'15px 28px',borderRadius:'12px',fontSize:'16px',border:'1.5px solid rgba(255,255,255,0.3)'}}>Lihat Cara Kerja →</a>
         </div>
         <div style={{display:'flex',gap:'48px',justifyContent:'center',flexWrap:'wrap'}}>
-          {[['Ribuan','Sumber Dipantau'],['< 5 menit','Waktu Deteksi'],['Gratis','Untuk Mulai'],['24/7','Sistem Aktif']].map(([v,l])=>(
+          {[[publicStats.activeSources > 0 ? `${publicStats.activeSources}+` : '...','Sumber Dipantau'],[publicStats.notificationsSent > 0 ? `${publicStats.notificationsSent.toLocaleString('id-ID')}+` : '...','Notifikasi Terkirim'],['24/7','Sistem Aktif']].map(([v,l])=>(
             <div key={l} style={{textAlign:'center'}}><div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'30px',fontWeight:800,color:'white'}}>{v}</div><div style={{fontSize:'13px',color:'rgba(255,255,255,0.6)',marginTop:'4px'}}>{l}</div></div>
           ))}
         </div>
@@ -148,15 +160,15 @@ export default function Home() {
           <p style={{fontSize:'11px',fontWeight:700,color:'#0F6E56',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'12px'}}>Keunggulan</p>
           <h2 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(24px,4vw,38px)',fontWeight:800,marginBottom:'40px'}}>Teknologi Enterprise, Harga Terjangkau</h2>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'20px'}}>
-            {[{i:'🤖',t:'Agentic AI Matching',d:'AI memahami konteks, bukan sekadar keyword. Relevansi tinggi, spam rendah.',bg:'#E8F0FB'},
-              {i:'⚡',t:'Notifikasi Real-time',d:'Deteksi peluang baru dalam hitungan menit.',bg:'#E1F5EE'},
-              {i:'🔍',t:'Multi-Source Crawling',d:'Pantau Ribuan sumber online diindeks secara real-time.',bg:'#FEF3C7'},
-              {i:'📱',t:'Multi-Channel Notif',d:'Email, WhatsApp, Telegram, atau Push. Pilih yang nyaman.',bg:'#EDE9FE'},
-              {i:'📍',t:'Deteksi Lokasi Otomatis',d:'Lokasi terisi otomatis saat buat Pantau.in.',bg:'#FFE4E6'},
-              {i:'✨',t:'Auto-detect Kategori',d:'Tulis bebas — AI langsung deteksi kategorinya.',bg:'#DCFCE7'},
+            {[{i:Bot,c:'#1560BD',t:'Agentic AI Matching',d:'AI memahami konteks, bukan sekadar keyword. Relevansi tinggi, spam rendah.',bg:'#E8F0FB'},
+              {i:Zap,c:'#0F6E56',t:'Notifikasi Real-time',d:'Deteksi peluang baru dalam hitungan menit.',bg:'#E1F5EE'},
+              {i:Search,c:'#D97706',t:'Multi-Source Crawling',d:'Pantau Ribuan sumber online diindeks secara real-time.',bg:'#FEF3C7'},
+              {i:Smartphone,c:'#7C3AED',t:'Multi-Channel Notif',d:'Email, WhatsApp, Telegram, atau Push. Pilih yang nyaman.',bg:'#EDE9FE'},
+              {i:MapPin,c:'#DC2626',t:'Deteksi Lokasi Otomatis',d:'Lokasi terisi otomatis saat buat Pantau.in.',bg:'#FFE4E6'},
+              {i:Sparkles,c:'#16A34A',t:'Auto-detect Kategori',d:'Tulis bebas — AI langsung deteksi kategorinya.',bg:'#DCFCE7'},
             ].map(f=>(
-              <div key={f.t} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'28px'}}>
-                <div style={{width:'48px',height:'48px',borderRadius:'12px',background:f.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px',marginBottom:'16px'}}>{f.i}</div>
+              <div key={f.t} className="feature-card" style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'28px',transition:'transform .2s, box-shadow .2s'}}>
+                <div style={{width:'48px',height:'48px',borderRadius:'12px',background:f.bg,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'16px'}}><f.i size={22} color={f.c}/></div>
                 <h3 style={{fontWeight:700,fontSize:'16px',marginBottom:'8px'}}>{f.t}</h3>
                 <p style={{fontSize:'14px',color:'#5A7090',lineHeight:1.65,margin:0}}>{f.d}</p>
               </div>
@@ -165,19 +177,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* COCOK BUAT SIAPA */}
+      <section style={{background:'#F8FAFC',padding:'clamp(40px,6vw,64px) clamp(16px,4vw,40px)'}}>
+        <div style={{maxWidth:'1160px',margin:'0 auto',paddingLeft:'clamp(16px,3vw,40px)',paddingRight:'clamp(16px,3vw,40px)'}}>
+          <p style={{fontSize:'11px',fontWeight:700,color:'#0F6E56',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'12px',textAlign:'center'}}>Untuk Siapa</p>
+          <h2 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(24px,4vw,38px)',fontWeight:800,marginBottom:'40px',textAlign:'center'}}>Cocok Buat Kamu Yang...</h2>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'20px'}}>
+            {[
+              {t:'Kontraktor & Rekanan',d:'Mau tau tender pengadaan & proyek swasta terbaru, tanpa perlu cek LPSE manual tiap hari.'},
+              {t:'Agen & Investor Properti',d:'Mau dapat info kavling, rumah, atau ruko baru dijual sesuai lokasi dan budget yang kamu incar.'},
+              {t:'Pencari Kerja',d:'Mau dapat lowongan baru sesuai bidang keahlian, tanpa harus buka banyak job portal tiap hari.'},
+              {t:'Pebisnis & Reseller',d:'Mau tau peluang franchise, distributor, atau mitra bisnis baru begitu muncul di internet.'},
+            ].map(u=>(
+              <div key={u.t} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
+                <h3 style={{fontWeight:700,fontSize:'16px',marginBottom:'8px'}}>{u.t}</h3>
+                <p style={{fontSize:'14px',color:'#5A7090',lineHeight:1.65,margin:0}}>{u.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* CARA KERJA */}
       <section id="cara-kerja" style={{padding:'clamp(40px,6vw,64px) clamp(16px,4vw,40px)'}}>
         <div style={{maxWidth:'1160px',margin:'0 auto',paddingLeft:'clamp(16px,3vw,40px)',paddingRight:'clamp(16px,3vw,40px)',textAlign:'center'}}>
           <p style={{fontSize:'11px',fontWeight:700,color:'#0F6E56',letterSpacing:'.12em',textTransform:'uppercase',marginBottom:'12px'}}>Cara Kerja</p>
           <h2 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(24px,4vw,38px)',fontWeight:800,marginBottom:'48px'}}>Mulai Memantau dalam 3 Menit</h2>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'20px',textAlign:'left'}}>
-            {[{n:'01',i:'🎯',t:'Tulis Kata Kunci',d:'Ketik apa yang ingin dipantau — tender, berita industri, pengumuman, atau topik bisnis apapun. AI kami yang pahami konteksnya.'},
-              {n:'02',i:'🤖',t:'Sistem Memindai Internet',d:'Pantau.in memindai ribuan sumber online setiap 5 menit — media nasional, media daerah, portal berita industri, dan situs pengumuman publik.'},
-              {n:'03',i:'📱',t:'Terima Notifikasi Instan',d:'Begitu ada konten baru yang relevan ditemukan, alert langsung dikirim ke WhatsApp, Email, atau Telegram pilihanmu.'},
+            {[{n:'01',i:Target,t:'Tulis Kata Kunci',d:'Ketik apa yang ingin dipantau — tender, berita industri, pengumuman, atau topik bisnis apapun. AI kami yang pahami konteksnya.'},
+              {n:'02',i:Bot,t:'Sistem Memindai Internet',d:'Pantau.in memindai ribuan sumber online setiap 5 menit — media nasional, media daerah, portal berita industri, dan situs pengumuman publik.'},
+              {n:'03',i:Smartphone,t:'Terima Notifikasi Instan',d:'Begitu ada konten baru yang relevan ditemukan, alert langsung dikirim ke WhatsApp, Email, atau Telegram pilihanmu.'},
             ].map(s=>(
-              <div key={s.t} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'32px',position:'relative',overflow:'hidden'}}>
+              <div key={s.t} className="feature-card" style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'32px',position:'relative',overflow:'hidden',transition:'transform .2s, box-shadow .2s'}}>
                 <div style={{position:'absolute',top:'-8px',right:'16px',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'56px',fontWeight:800,color:'#F0F4F9'}}>{s.n}</div>
-                <div style={{fontSize:'40px',marginBottom:'16px'}}>{s.i}</div>
+                <div style={{marginBottom:'16px'}}><s.i size={36} color="#1560BD"/></div>
                 <h3 style={{fontWeight:700,fontSize:'17px',marginBottom:'10px'}}>{s.t}</h3>
                 <p style={{fontSize:'14px',color:'#5A7090',lineHeight:1.7,margin:0}}>{s.d}</p>
               </div>
@@ -245,6 +277,36 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CAMPAIGN REFERRAL */}
+      <section style={{background:'linear-gradient(135deg,#0F6E56,#16A34A)',padding:'clamp(48px,7vw,72px) clamp(16px,4vw,40px)'}}>
+        <div style={{maxWidth:'840px',margin:'0 auto',textAlign:'center'}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.25)',borderRadius:'100px',padding:'7px 18px',marginBottom:'20px',fontSize:'13px',color:'white',fontWeight:600}}>
+            🎁 Program Ajak Teman
+          </div>
+          <h2 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(24px,4vw,36px)',fontWeight:800,color:'white',marginBottom:'16px'}}>
+            Ajak Teman, Kalian Berdua Untung
+          </h2>
+          <p style={{fontSize:'16px',color:'rgba(255,255,255,0.85)',maxWidth:'560px',margin:'0 auto 40px',lineHeight:1.7}}>
+            Punya akun Pantau.in? Bagikan link kamu ke teman. Setiap teman yang daftar dan aktif, kalian berdua dapat bonus — gratis, tanpa syarat ribet.
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'20px',marginBottom:'40px'}}>
+            <div style={{background:'rgba(255,255,255,0.12)',borderRadius:'16px',padding:'28px 24px',border:'1px solid rgba(255,255,255,0.2)'}}>
+              <div style={{fontSize:'32px',marginBottom:'12px'}}>👋</div>
+              <p style={{fontWeight:800,fontSize:'18px',color:'white',marginBottom:'6px'}}>+7 Hari Pro</p>
+              <p style={{fontSize:'13px',color:'rgba(255,255,255,0.8)',lineHeight:1.6,margin:0}}>Begitu temanmu daftar pakai link kamu, kalian berdua langsung dapat 7 hari akses Pro gratis.</p>
+            </div>
+            <div style={{background:'rgba(255,255,255,0.12)',borderRadius:'16px',padding:'28px 24px',border:'1px solid rgba(255,255,255,0.2)'}}>
+              <div style={{fontSize:'32px',marginBottom:'12px'}}>🚀</div>
+              <p style={{fontWeight:800,fontSize:'18px',color:'white',marginBottom:'6px'}}>+30 Hari Pro</p>
+              <p style={{fontSize:'13px',color:'rgba(255,255,255,0.8)',lineHeight:1.6,margin:0}}>Kalau temanmu upgrade ke Pro, kamu dapat bonus tambahan 30 hari Pro — gak ada batasnya, ajak sebanyak yang kamu mau.</p>
+            </div>
+          </div>
+          <a href="/register" style={{display:'inline-block',background:'white',color:'#0F6E56',fontWeight:700,padding:'15px 36px',borderRadius:'12px',fontSize:'16px',textDecoration:'none'}}>
+            Daftar & Dapatkan Link Referral →
+          </a>
+          <p style={{fontSize:'12px',color:'rgba(255,255,255,0.65)',marginTop:'16px'}}>Sudah punya akun? Cek link referral kamu di menu Referral setelah login.</p>
+        </div>
+      </section>
       {/* CTA */}
       <section style={{background:'linear-gradient(135deg,#0D1B2A,#1560BD)',padding:'88px 40px',textAlign:'center'}}>
         <h2 style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'clamp(28px,4vw,42px)',fontWeight:800,color:'white',marginBottom:'16px'}}>Siap Memantau Peluangmu?</h2>
@@ -257,12 +319,12 @@ export default function Home() {
         <div style={{maxWidth:'1160px',margin:'0 auto',paddingLeft:'clamp(16px,3vw,40px)',paddingRight:'clamp(16px,3vw,40px)'}}>
           <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr',gap:'40px',marginBottom:'52px'}}>
             <div>
-              <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px'}}><LOGO/><span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'20px',fontWeight:800}}><span style={{color:'white'}}>Pantau</span><span style={{color:'#0F6E56'}}>.in</span></span></div>
+              <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px'}}><LOGO_ON_DARK/><span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'20px',fontWeight:800}}><span style={{color:'white'}}>Pantau</span><span style={{color:'#0F6E56'}}>.in</span></span></div>
               <p style={{fontSize:'13px',color:'rgba(255,255,255,0.5)',lineHeight:1.8,marginBottom:'24px',maxWidth:'240px'}}>Sistem intelijen peluang berbasis AI — pantau internet Indonesia, terima alert di WhatsApp.</p>
               <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-                <a href={`mailto:${cfg.contact_email}`} style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><span>📧</span><span>{cfg.contact_email}</span></a>
-                <a href={cfg.contact_wa} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><span>💬</span><span>WhatsApp Support {cfg.contact_wa_label}</span></a>
-                <a href={cfg.telegram_channel} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><span>✈️</span><span>Telegram Channel</span></a>
+                <a href={`mailto:${cfg.contact_email}`} style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><Mail size={16}/><span>{cfg.contact_email}</span></a>
+                <a href={cfg.contact_wa} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><MessageCircle size={16}/><span>WhatsApp Support {cfg.contact_wa_label}</span></a>
+                <a href={cfg.telegram_channel} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px',color:'rgba(255,255,255,0.6)'}}><Send size={16}/><span>Telegram Channel</span></a>
               </div>
             </div>
             <div>

@@ -1,4 +1,5 @@
 'use client'
+import { Gift, Check, Copy, Send, Users, Star } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export default function ReferralPage() {
@@ -28,14 +29,14 @@ export default function ReferralPage() {
     }
   }
 
-  if (loading) return <div style={{textAlign:'center',padding:'60px',color:'#9EB3C8'}}>⏳ Memuat...</div>
+  if (loading) return <div style={{textAlign:'center',padding:'60px',color:'#9EB3C8'}}>Memuat...</div>
 
   const cfg = data?.config ?? {}
 
   return (
     <div>
       <div style={{marginBottom:'24px'}}>
-        <h1 style={{fontSize:'24px',fontWeight:800}}>Referral Program 🎁</h1>
+        <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Referral Program <Gift size={20}/></h1>
         <p style={{color:'#5A7090',marginTop:'4px',fontSize:'14px'}}>Ajak teman, kamu dan temanmu sama-sama dapat bonus!</p>
       </div>
 
@@ -63,11 +64,11 @@ export default function ReferralPage() {
             {data?.referralLink}
           </div>
           <button onClick={copy} style={{padding:'12px 20px',background:copied?'#0F6E56':'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'13px',whiteSpace:'nowrap'}}>
-            {copied ? '✓ Disalin!' : '📋 Salin'}
+            {copied ? <span style={{display:'inline-flex',alignItems:'center',gap:'4px'}}><Check size={14}/> Disalin!</span> : <span style={{display:'inline-flex',alignItems:'center',gap:'4px'}}><Copy size={14}/> Salin</span>}
           </button>
         </div>
         <button onClick={share} style={{width:'100%',padding:'12px',background:'#F8FAFC',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontWeight:600,cursor:'pointer',fontSize:'14px',color:'#0D1B2A'}}>
-          📤 Bagikan ke WhatsApp / Sosmed
+          <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><Send size={15}/> Bagikan ke WhatsApp / Sosmed</span>
         </button>
         <p style={{fontSize:'12px',color:'#9EB3C8',marginTop:'10px',textAlign:'center'}}>
           Kode referral kamu: <strong style={{color:'#1560BD'}}>{data?.referralCode}</strong>
@@ -77,11 +78,11 @@ export default function ReferralPage() {
       {/* Stats */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',gap:'12px',marginBottom:'20px'}}>
         {[
-          {i:'👥',v:data?.referralCount ?? 0,l:'Total Teman Diajak'},
-          {i:'⭐',v:data?.referrals?.filter((r:any)=>r.plan!=='FREE').length ?? 0,l:'Upgrade ke Pro/Business'},
-        ].map(({i,v,l}) => (
+          {i:Users,v:data?.referralCount ?? 0,l:'Total Teman Diajak'},
+          {i:Star,v:data?.referrals?.filter((r:any)=>r.plan!=='FREE').length ?? 0,l:'Upgrade ke Pro/Business'},
+        ].map(({i:Icon,v,l}) => (
           <div key={l} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'14px',padding:'18px',display:'flex',gap:'14px',alignItems:'center'}}>
-            <span style={{fontSize:'28px'}}>{i}</span>
+            <Icon size={26} color="#1560BD"/>
             <div>
               <p style={{fontSize:'24px',fontWeight:800,color:'#0D1B2A',margin:0}}>{v}</p>
               <p style={{fontSize:'12px',color:'#9EB3C8',margin:0}}>{l}</p>

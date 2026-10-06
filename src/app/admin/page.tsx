@@ -1,4 +1,5 @@
 'use client'
+import { Users, CheckCircle, Star, Search, Bell, Bot, Target } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -15,7 +16,17 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('users')
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [watchQueries, setWatchQueries] = useState<any[]>([])
+  const [wqSummary, setWqSummary] = useState<any>({})
+  const [wqSearch, setWqSearch] = useState('')
+  const [wqStatus, setWqStatus] = useState('ALL')
+  const [wqLoading, setWqLoading] = useState(false)
   const [confirmModal, setConfirmModal] = useState<{open:boolean,title:string,message:string,onConfirm:()=>void,color?:string}>({open:false,title:'',message:'',onConfirm:()=>{}})
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [notifSummary, setNotifSummary] = useState<any>({})
+  const [notifSearch, setNotifSearch] = useState('')
+  const [notifStatus, setNotifStatus] = useState('ALL')
+  const [notifLoading, setNotifLoading] = useState(false)
 
   useEffect(()=>{
     if(session&&!['ADMIN','SUPER_ADMIN'].includes(user?.role)){router.push('/dashboard');return}
@@ -66,6 +77,48 @@ export default function AdminPage() {
 
   const handleSearch = (e:React.FormEvent)=>{ e.preventDefault(); fetchUsers(search,filterPlan) }
 
+  const fetchWatchQueries = async(q='',status='ALL')=>{
+    setWqLoading(true)
+    const params = new URLSearchParams({limit:'100'})
+    if(q) params.set('q',q)
+    if(status!=='ALL') params.set('status',status)
+    const res = await fetch(`/api/admin/watch-queries?${params}`)
+    const data = await res.json()
+    if(data.watches) setWatchQueries(data.watches)
+    if(data.summary) setWqSummary(data.summary)
+    setWqLoading(false)
+  }
+
+  const handleWqSearch = (e:React.FormEvent)=>{ e.preventDefault(); fetchWatchQueries(wqSearch,wqStatus) }
+  const fetchNotifications = async(q='',status='ALL')=>{
+    setNotifLoading(true)
+    const params = new URLSearchParams({limit:'100'})
+    if(q) params.set('q',q)
+    if(status!=='ALL') params.set('status',status)
+    const res = await fetch(`/api/admin/notifications?${params}`)
+    const data = await res.json()
+    if(data.notifications) setNotifications(data.notifications)
+    if(data.summary) setNotifSummary(data.summary)
+    setNotifLoading(false)
+  }
+  const handleNotifSearch = (e:React.FormEvent)=>{ e.preventDefault(); fetchNotifications(notifSearch,notifStatus) }
+  const openUserWatches = (email:string)=>{
+    setSelectedUser(null)
+    setActiveTab('watchqueries')
+    setWqSearch(email)
+    fetchWatchQueries(email,'ALL')
+  }
+  const openUserNotifications = (email:string)=>{
+    setSelectedUser(null)
+    setActiveTab('notifications')
+    setNotifSearch(email)
+    fetchNotifications(email,'ALL')
+  }
+
+  useEffect(()=>{
+    if(activeTab==='watchqueries' && watchQueries.length===0) fetchWatchQueries()
+  },[activeTab])
+
   const fmtDate = (d:string)=>d?new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'-'
   const CHANNEL_LABEL:Record<string,string> = {EMAIL:'Email',WHATSAPP:'WhatsApp',TELEGRAM:'Telegram',PUSH:'Push'}
   const PLAN_COLORS: Record<string,string> = {FREE:'#64748b',PRO:'#1560BD',BUSINESS:'#0F6E56'}
@@ -80,23 +133,23 @@ export default function AdminPage() {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'16px',marginBottom:'28px'}}>
         {[
-          ['Total Pengguna',stats.totalUsers||0,'👥'],['Pengguna Aktif',stats.activeUsers||0,'✅'],
-          ['Plan Pro+',stats.paidUsers||0,'⭐'],['Watch Queries',stats.totalWatches||0,'🔍'],
-          ['Notif Terkirim',stats.totalNotifs||0,'🔔'],['Scraper Aktif',stats.activeScrapers||48,'🤖'],
-        ].map(([l,v,i])=>(
+          ['Total Pengguna',stats.totalUsers||0,Users],['Pengguna Aktif',stats.activeUsers||0,CheckCircle],
+          ['Plan Pro+',stats.paidUsers||0,Star],['Watch Queries',stats.totalWatches||0,Search],
+          ['Notif Terkirim',stats.totalNotifs||0,Bell],['Scraper Aktif',stats.activeScrapers||48,Bot],
+        ].map(([l,v,Icon]:any)=>(
           <div key={String(l)} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'14px',padding:'18px'}}>
             <p style={{fontSize:'12px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'6px'}}>{l}</p>
-            <p style={{fontSize:'26px',fontWeight:800}}>{String(i)} {String(v)}</p>
+            <p style={{fontSize:'26px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}><Icon size={20} color="#1560BD"/> {String(v)}</p>
           </div>
         ))}
       </div>
 
       <div style={{display:'flex',gap:'4px',background:'#F8FAFC',borderRadius:'12px',padding:'4px',marginBottom:'20px',width:'fit-content'}}>
-        {[{k:'users',l:'👥 Pengguna'},{k:'scrapers',l:'🤖 Scrapers'},{k:'notifications',l:'🔔 Notifikasi'}].map(t=>(
+        {[{k:'users',l:'Pengguna',icon:Users},{k:'watchqueries',l:'Watch Queries',icon:Target},{k:'scrapers',l:'Scrapers',icon:Bot},{k:'notifications',l:'Notifikasi',icon:Bell}].map(t=>(
           <button key={t.k} onClick={()=>setActiveTab(t.k)}
             style={{padding:'8px 16px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
               background:activeTab===t.k?'white':'transparent',color:activeTab===t.k?'#1560BD':'#5A7090'}}>
-            {t.l}
+            <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><t.icon size={15}/>{t.l}</span>
           </button>
         ))}
       </div>
@@ -104,7 +157,7 @@ export default function AdminPage() {
       {activeTab==='users'&&(
         <>
           <form onSubmit={handleSearch} style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Cari nama atau email..."
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari nama atau email..."
               style={{flex:1,minWidth:'200px',padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit'}}/>
             <select value={filterPlan} onChange={e=>{setFilterPlan(e.target.value);fetchUsers(search,e.target.value)}}
               style={{padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',background:'white'}}>
@@ -114,7 +167,7 @@ export default function AdminPage() {
             <button type="submit" style={{padding:'10px 20px',background:'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>Cari</button>
           </form>
 
-          {loading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>⏳ Memuat data pengguna...</div>:(
+          {loading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>Memuat data pengguna...</div>:(
             <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',overflow:'hidden'}}>
               <table style={{width:'100%',borderCollapse:'collapse'}}>
                 <thead>
@@ -141,7 +194,7 @@ export default function AdminPage() {
                             <p style={{fontSize:'12px',color:'#9EB3C8',margin:0}}>{u.email}</p>
                             {u.registrationIp&&<p style={{fontSize:'11px',color:'#9EB3C8',margin:'2px 0 0'}}>🌐 Reg: {u.registrationIp}</p>}
                             {u.lastLoginAt&&<p style={{fontSize:'11px',color:'#5A7090',margin:'2px 0 0'}}>🕐 Login: {new Date(u.lastLoginAt).toLocaleDateString('id-ID')} {new Date(u.lastLoginAt).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}{u.lastLoginIp?' · '+u.lastLoginIp:''}</p>}
-                            <p style={{fontSize:'11px',color:'#5A7090',margin:'2px 0 0'}}>🔍 {u._count?.watches||0} pantauan · 🔔 {u._count?.notifications||0} notif</p>
+                            <p style={{fontSize:'11px',color:'#5A7090',margin:'2px 0 0',display:'flex',alignItems:'center',gap:'8px'}}><span style={{display:'inline-flex',alignItems:'center',gap:'3px'}}><Search size={11}/> {u._count?.watches||0} pantauan</span><span style={{display:'inline-flex',alignItems:'center',gap:'3px'}}><Bell size={11}/> {u._count?.notifications||0} notif</span></p>
                           </div>
                         </div>
                       </td>
@@ -196,6 +249,98 @@ export default function AdminPage() {
         </>
       )}
 
+      {activeTab==='watchqueries'&&(
+        <>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:'12px',marginBottom:'16px'}}>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Total Watch Query</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0}}>{wqSummary.total||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Aktif</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:'#0F6E56'}}>{wqSummary.active||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Belum Ada Match</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:wqSummary.noMatchYet>0?'#EF4444':'#9EB3C8'}}>{wqSummary.noMatchYet||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>⚠️ Keyword Terlalu Luas</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:wqSummary.broadKeyword>0?'#EF4444':'#9EB3C8'}}>{wqSummary.broadKeyword||0}</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleWqSearch} style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
+            <input value={wqSearch} onChange={e=>setWqSearch(e.target.value)} placeholder="Cari keyword, nama, atau email user..."
+              style={{flex:1,minWidth:'200px',padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit'}}/>
+            <select value={wqStatus} onChange={e=>{setWqStatus(e.target.value);fetchWatchQueries(wqSearch,e.target.value)}}
+              style={{padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',background:'white'}}>
+              <option value="ALL">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Nonaktif</option>
+              <option value="no_match">Belum Ada Match (3+ hari)</option>
+              <option value="broad">⚠️ Keyword Terlalu Luas</option>
+            </select>
+            <button type="submit" style={{padding:'10px 20px',background:'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>Cari</button>
+          </form>
+
+          {wqLoading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>Memuat data watch query...</div>:(
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',overflow:'hidden'}}>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead>
+                  <tr style={{background:'#F8FAFC'}}>
+                    {['User','Keyword / Query','Kategori','Status','Total','Terkirim','Gagal','Dibaca','Match Terakhir','Dibuat'].map(h=>(
+                      <th key={h} style={{padding:'12px 16px',textAlign:'left',fontSize:'12px',fontWeight:700,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',borderBottom:'1px solid #DDE5EF'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {watchQueries.map((w,i)=>(
+                    <tr key={w.id} style={{borderBottom:i<watchQueries.length-1?'1px solid #F1F5F9':'none',background:w.isStale?'#FEF2F2':'transparent'}}>
+                      <td style={{padding:'14px 16px'}}>
+                        <p style={{fontWeight:600,fontSize:'13px',margin:0}}>{w.user?.name}</p>
+                        <p style={{fontSize:'11px',color:'#9EB3C8',margin:'2px 0 0'}}>{w.user?.email}</p>
+                        <span style={{fontSize:'10px',fontWeight:700,padding:'1px 8px',borderRadius:'100px',background:'#F1F5F9',color:'#5A7090',marginTop:'3px',display:'inline-block'}}>{w.user?.plan}</span>
+                      </td>
+                      <td style={{padding:'14px 16px'}}>
+                        <p style={{fontWeight:600,fontSize:'13px',margin:0}}>{w.name}</p>
+                        <p style={{fontSize:'12px',color:'#5A7090',margin:'2px 0 0'}}>{w.queryText}</p>
+                      </td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#5A7090'}}>{w.category}</td>
+                      <td style={{padding:'14px 16px'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'12px',color:w.isActive?'#0F6E56':'#94A3B8'}}>
+                          <span style={{width:'6px',height:'6px',borderRadius:'50%',background:w.isActive?'#10B981':'#94A3B8',display:'inline-block'}}/>
+                          {w.isActive?'Aktif':'Nonaktif'}
+                        </span>
+                        {w.isStale&&<span style={{fontSize:'10px',fontWeight:700,color:'#EF4444',display:'block',marginTop:'3px'}}>⚠️ {w.ageDays}h belum match</span>}
+                      </td>
+                      <td style={{padding:'14px 16px',textAlign:'center'}}>
+                        <span style={{fontSize:'16px',fontWeight:800,color:w.totalMatches>0?'#1560BD':'#9EB3C8'}}>{w.totalMatches}</span>
+                        {w.isBroad&&<span style={{fontSize:'9px',fontWeight:700,color:'#EF4444',display:'block',marginTop:'2px'}}>⚠️ Terlalu Luas</span>}
+                      </td>
+                      <td style={{padding:'14px 16px',textAlign:'center'}}>
+                        <span style={{fontSize:'14px',fontWeight:700,color:'#0F6E56'}}>{w.sent}</span>
+                      </td>
+                      <td style={{padding:'14px 16px',textAlign:'center'}}>
+                        <span style={{fontSize:'14px',fontWeight:700,color:w.failed>0?'#EF4444':'#9EB3C8'}}>{w.failed}</span>
+                      </td>
+                      <td style={{padding:'14px 16px',textAlign:'center'}}>
+                        <span style={{fontSize:'14px',fontWeight:700,color:'#7C3AED'}}>{w.read}</span>
+                      </td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#9EB3C8'}}>
+                        {w.lastMatchAt?new Date(w.lastMatchAt).toLocaleDateString('id-ID')+' '+new Date(w.lastMatchAt).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—'}
+                      </td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#9EB3C8'}}>{new Date(w.createdAt).toLocaleDateString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {watchQueries.length===0&&<div style={{padding:'48px',textAlign:'center',color:'#5A7090'}}>Tidak ada watch query ditemukan</div>}
+            </div>
+          )}
+        </>
+      )}
+
       {activeTab==='scrapers'&&(
         <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',overflow:'hidden'}}>
           <table style={{width:'100%',borderCollapse:'collapse'}}>
@@ -234,9 +379,73 @@ export default function AdminPage() {
       )}
 
       {activeTab==='notifications'&&(
-        <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px',textAlign:'center'}}>
-          <p style={{fontSize:'14px',color:'#5A7090'}}>Log notifikasi platform akan tampil di sini.</p>
-        </div>
+        <>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:'12px',marginBottom:'16px'}}>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Terkirim</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:'#0F6E56'}}>{notifSummary.totalSent||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Gagal</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:notifSummary.totalFailed>0?'#EF4444':'#9EB3C8'}}>{notifSummary.totalFailed||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Di-skip</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:'#9EB3C8'}}>{notifSummary.totalSkipped||0}</p>
+            </div>
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px'}}>
+              <p style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',margin:'0 0 4px'}}>Antrian</p>
+              <p style={{fontSize:'22px',fontWeight:800,margin:0,color:'#1560BD'}}>{notifSummary.totalQueued||0}</p>
+            </div>
+          </div>
+          <form onSubmit={handleNotifSearch} style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
+            <input value={notifSearch} onChange={e=>setNotifSearch(e.target.value)} placeholder="Cari judul, nama, atau email user..."
+              style={{flex:1,minWidth:'200px',padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit'}}/>
+            <select value={notifStatus} onChange={e=>{setNotifStatus(e.target.value);fetchNotifications(notifSearch,e.target.value)}}
+              style={{padding:'10px 14px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',background:'white'}}>
+              <option value="ALL">Semua Status</option>
+              <option value="SENT">Terkirim</option>
+              <option value="FAILED">Gagal</option>
+              <option value="SKIPPED">Di-skip</option>
+              <option value="QUEUED">Antrian</option>
+            </select>
+            <button type="submit" style={{padding:'10px 20px',background:'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>Cari</button>
+          </form>
+          {notifLoading?<div style={{textAlign:'center',padding:'48px',color:'#5A7090'}}>Memuat data notifikasi...</div>:(
+            <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',overflow:'hidden'}}>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead>
+                  <tr style={{background:'#F8FAFC'}}>
+                    {['User','Judul','Watch','Channel','Status','Dibaca','Waktu'].map(h=>(
+                      <th key={h} style={{padding:'12px 16px',textAlign:'left',fontSize:'12px',fontWeight:700,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',borderBottom:'1px solid #DDE5EF'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {notifications.map((n,i)=>(
+                    <tr key={n.id} style={{borderBottom:i<notifications.length-1?'1px solid #F1F5F9':'none'}}>
+                      <td style={{padding:'14px 16px'}}>
+                        <p style={{fontWeight:600,fontSize:'13px',margin:0}}>{n.user?.name}</p>
+                        <p style={{fontSize:'11px',color:'#9EB3C8',margin:'2px 0 0'}}>{n.user?.email}</p>
+                      </td>
+                      <td style={{padding:'14px 16px',fontSize:'13px',maxWidth:'260px'}}>{n.title}</td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#5A7090'}}>{n.watch?.name||'—'}</td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#5A7090'}}>{n.channel}</td>
+                      <td style={{padding:'14px 16px'}}>
+                        <span style={{fontSize:'11px',fontWeight:700,padding:'2px 10px',borderRadius:'100px',
+                          background:n.status==='SENT'?'#DCFCE7':n.status==='FAILED'?'#FEE2E2':'#F1F5F9',
+                          color:n.status==='SENT'?'#0F6E56':n.status==='FAILED'?'#DC2626':'#5A7090'}}>{n.status}</span>
+                      </td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:n.isRead?'#0F6E56':'#9EB3C8'}}>{n.isRead?'Ya':'Belum'}</td>
+                      <td style={{padding:'14px 16px',fontSize:'12px',color:'#9EB3C8'}}>{new Date(n.sentAt).toLocaleDateString('id-ID')} {new Date(n.sentAt).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {notifications.length===0&&<div style={{padding:'48px',textAlign:'center',color:'#5A7090'}}>Tidak ada notifikasi ditemukan</div>}
+            </div>
+          )}
+        </>
       )}
 
       {selectedUser&&(
@@ -290,11 +499,11 @@ export default function AdminPage() {
               <div style={{background:'#F8FAFC',borderRadius:'12px',padding:'16px'}}>
                 <p style={{fontSize:'11px',fontWeight:700,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',margin:'0 0 12px'}}>Aktivitas</p>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
-                  <div style={{background:'white',borderRadius:'8px',padding:'12px',textAlign:'center',border:'1px solid #DDE5EF'}}>
+                  <div onClick={()=>openUserWatches(selectedUser.email)} style={{background:'white',borderRadius:'8px',padding:'12px',textAlign:'center',border:'1px solid #DDE5EF',cursor:'pointer'}}>
                     <p style={{fontSize:'22px',fontWeight:800,color:'#1560BD',margin:0}}>{selectedUser._count?.watches||0}</p>
                     <p style={{fontSize:'11px',color:'#9EB3C8',margin:'4px 0 0'}}>Pantauan</p>
                   </div>
-                  <div style={{background:'white',borderRadius:'8px',padding:'12px',textAlign:'center',border:'1px solid #DDE5EF'}}>
+                  <div onClick={()=>openUserNotifications(selectedUser.email)} style={{background:'white',borderRadius:'8px',padding:'12px',textAlign:'center',border:'1px solid #DDE5EF',cursor:'pointer'}}>
                     <p style={{fontSize:'22px',fontWeight:800,color:'#0F6E56',margin:0}}>{selectedUser._count?.notifications||0}</p>
                     <p style={{fontSize:'11px',color:'#9EB3C8',margin:'4px 0 0'}}>Notifikasi</p>
                   </div>

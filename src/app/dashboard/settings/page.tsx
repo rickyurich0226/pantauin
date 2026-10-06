@@ -1,14 +1,15 @@
 'use client'
+import { Mail, MessageCircle, Send, Bell, User, Lock, Settings, Star, Moon, ClipboardList, Target } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import TwoFactorSettings from '@/components/TwoFactorSettings'
 import ConfirmModal from '@/components/ConfirmModal'
 
 const CHANNELS = [
-  {k:'EMAIL',i:'📧',l:'Email',d:'Kirim ke inbox email kamu',free:true},
-  {k:'WHATSAPP',i:'💬',l:'WhatsApp',d:'Via WA Business API resmi',free:false},
-  {k:'TELEGRAM',i:'✈️',l:'Telegram',d:'Bot @pantauin_bot',free:false},
-  {k:'PUSH',i:'🔔',l:'Push Notification',d:'Browser & mobile app',free:false},
+  {k:'EMAIL',i:'📧',icon:Mail,l:'Email',d:'Kirim ke inbox email kamu',free:true},
+  {k:'WHATSAPP',i:'💬',icon:MessageCircle,l:'WhatsApp',d:'Via WA Business API resmi',free:false},
+  {k:'TELEGRAM',i:'✈️',icon:Send,l:'Telegram',d:'Bot @pantauin_bot',free:false},
+  {k:'PUSH',i:'🔔',icon:Bell,l:'Push Notification',d:'Browser & mobile app',free:false},
 ]
 
 export default function SettingsPage() {
@@ -17,6 +18,12 @@ export default function SettingsPage() {
   const isPro = user?.plan !== 'FREE'
 
   const [activeTab, setActiveTab] = useState('notif')
+  const [bizType, setBizType] = useState('')
+  const [bizDesc, setBizDesc] = useState('')
+  const [bizCity, setBizCity] = useState('')
+  const [bizBudget, setBizBudget] = useState('')
+  const [bizSaved, setBizSaved] = useState(false)
+  const [bizLoading, setBizLoading] = useState(false)
   const [channels, setChannels] = useState<string[]>(['EMAIL'])
   const [enabled, setEnabled] = useState(true)
   const [whatsapp, setWhatsapp] = useState('')
@@ -33,6 +40,12 @@ export default function SettingsPage() {
   const [msg, setMsg] = useState<{type:'ok'|'err',text:string}|null>(null)
 
   useEffect(()=>{
+    fetch('/api/user/profile').then(r=>r.json()).then(d=>{
+      if(d.businessType) setBizType(d.businessType)
+      if(d.businessDesc) setBizDesc(d.businessDesc)
+      if(d.businessCity) setBizCity(d.businessCity)
+      if(d.businessBudget) setBizBudget(d.businessBudget)
+    })
     fetch('/api/user/channels').then(r=>r.json()).then(d=>{
       if(d.quietStart) setQuietStart(d.quietStart)
       if(d.quietEnd) setQuietEnd(d.quietEnd)
@@ -65,8 +78,35 @@ export default function SettingsPage() {
       body:JSON.stringify({notifChannels:channels,notifEnabled:enabled,whatsapp,telegramId,quietStart,quietEnd})})
     const data = await res.json()
     setSaving(false)
-    if(res.ok) showMsg('ok','✅ Pengaturan notifikasi tersimpan!')
+    if(res.ok) showMsg('ok','Pengaturan notifikasi tersimpan!')
     else showMsg('err',data.error||'Gagal menyimpan')
+  }
+
+  const [testing, setTesting] = useState(false)
+  const testNotif = async() => {
+    setTesting(true)
+    try {
+      // simpan setelan terbaru dulu biar channel/nomor kepakai
+      await fetch('/api/user/channels',{method:'PUT',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({notifChannels:channels,notifEnabled:enabled,whatsapp,telegramId,quietStart,quietEnd})})
+      // ambil watch pertama user
+      const wr = await fetch('/api/watches')
+      const wd = await wr.json()
+      const list = Array.isArray(wd) ? wd : (wd.watches || wd.data || [])
+      if (!list.length) { showMsg('err','Buat dulu minimal 1 pantauan buat ngetes notifikasi.'); setTesting(false); return }
+      const res = await fetch('/api/notifications/test',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({watchId:list[0].id})})
+      const data = await res.json()
+      if (res.ok) {
+        const sent = Object.entries(data.results||{}).filter(([k,v])=>v===true).map(([k])=>k.toUpperCase())
+        showMsg('ok', sent.length ? `Notifikasi tes terkirim via ${sent.join(' + ')} \u2705` : 'Tes terkirim, cek channel kamu.')
+      } else {
+        showMsg('err', data.error || 'Gagal mengirim tes.')
+      }
+    } catch(e:any) {
+      showMsg('err','Gagal: '+(e?.message||'error tak dikenal'))
+    }
+    setTesting(false)
   }
 
   const saveProfile = async() => {
@@ -75,7 +115,7 @@ export default function SettingsPage() {
       body:JSON.stringify({name,phone,whatsapp,telegramId})})
     const data = await res.json()
     setSaving(false)
-    if(res.ok) showMsg('ok','✅ Profil berhasil diperbarui!')
+    if(res.ok){ if(data.waNeedsVerify){ window.location.href='/verify-whatsapp?next='+encodeURIComponent('/dashboard/settings'); return } showMsg('ok','Profil berhasil diperbarui!') }
     else showMsg('err',data.error||'Gagal menyimpan')
   }
 
@@ -86,18 +126,18 @@ export default function SettingsPage() {
       body:JSON.stringify({currentPassword:currentPass,newPassword:newPass})})
     const data = await res.json()
     setSaving(false)
-    if(res.ok){showMsg('ok','✅ Password berhasil diubah!');setCurrentPass('');setNewPass('');setConfirmPass('')}
+    if(res.ok){showMsg('ok','Password berhasil diubah!');setCurrentPass('');setNewPass('');setConfirmPass('')}
     else showMsg('err',data.error||'Gagal mengubah password')
   }
 
   const inp={width:'100%',padding:'10px 12px',border:'1.5px solid #DDE5EF',borderRadius:'8px',fontSize:'14px',outline:'none',fontFamily:'inherit',background:'white'} as React.CSSProperties
 
-  const TABS = [{k:'notif',l:'🔔 Notifikasi'},{k:'profile',l:'👤 Profil'},{k:'security',l:'🔒 Keamanan'}]
+  const TABS = [{k:'notif',l:'Notifikasi',icon:Bell},{k:'profile',l:'Profil',icon:User},{k:'security',l:'Keamanan',icon:Lock}]
 
   return (
     <div>
       <div style={{marginBottom:'24px'}}>
-        <h1 style={{fontSize:'24px',fontWeight:800}}>Pengaturan ⚙️</h1>
+        <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Pengaturan <Settings size={20}/></h1>
         <p style={{color:'#5A7090',marginTop:'4px',fontSize:'14px'}}>Kelola preferensi akun dan notifikasimu.</p>
       </div>
 
@@ -110,7 +150,7 @@ export default function SettingsPage() {
           <button key={t.k} onClick={()=>setActiveTab(t.k)}
             style={{padding:'8px 18px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
               background:activeTab===t.k?'white':'transparent',color:activeTab===t.k?'#1560BD':'#5A7090',
-              boxShadow:activeTab===t.k?'0 1px 4px rgba(0,0,0,0.08)':'none'}}>{t.l}</button>
+              boxShadow:activeTab===t.k?'0 1px 4px rgba(0,0,0,0.08)':'none',display:'inline-flex',alignItems:'center',gap:'6px'}}><t.icon size={15}/>{t.l}</button>
         ))}
       </div>
 
@@ -149,7 +189,7 @@ export default function SettingsPage() {
                       background:sel?'#E8F0FB':'white',cursor:locked?'not-allowed':'pointer',textAlign:'left',opacity:locked?0.6:1,
                       transition:'all .2s'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'8px'}}>
-                      <span style={{fontSize:'24px'}}>{ch.i}</span>
+                      <ch.icon size={22}/>
                       <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
                         {locked&&<span style={{fontSize:'10px',fontWeight:700,background:'#E8F0FB',color:'#1560BD',padding:'2px 7px',borderRadius:'100px'}}>Pro</span>}
                         {sel&&!locked&&<span style={{color:'#0F6E56',fontWeight:700,fontSize:'16px'}}>✓</span>}
@@ -164,7 +204,7 @@ export default function SettingsPage() {
 
             {!isPro&&(
               <div style={{background:'#E8F0FB',borderRadius:'10px',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'12px'}}>
-                <p style={{fontSize:'13px',color:'#1560BD',fontWeight:500,margin:0}}>⭐ WhatsApp, Telegram & Push tersedia di plan Pro</p>
+                <p style={{fontSize:'13px',color:'#1560BD',fontWeight:500,margin:0,display:'flex',alignItems:'center',gap:'6px'}}><Star size={14}/> WhatsApp, Telegram & Push tersedia di plan Pro</p>
                 <a href="/dashboard/upgrade" style={{fontSize:'13px',fontWeight:700,color:'#1560BD',textDecoration:'none',whiteSpace:'nowrap'}}>Upgrade →</a>
               </div>
             )}
@@ -173,7 +213,7 @@ export default function SettingsPage() {
           {/* WhatsApp number - tampil jika WA dipilih */}
           {channels.includes('WHATSAPP')&&isPro&&(
             <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'20px 24px'}}>
-              <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px'}}>💬 Nomor WhatsApp Kamu</h3>
+              <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><MessageCircle size={16}/> Nomor WhatsApp Kamu</h3>
               <p style={{color:'#5A7090',fontSize:'13px',marginBottom:'12px'}}>
                 Notifikasi WA akan dikirim ke nomor ini. Pastikan nomor terdaftar di WhatsApp.
               </p>
@@ -188,7 +228,7 @@ export default function SettingsPage() {
           {/* Telegram ID - tampil jika Telegram dipilih */}
           {channels.includes('TELEGRAM')&&isPro&&(
             <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'20px 24px'}}>
-              <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px'}}>✈️ Telegram Chat ID</h3>
+              <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><Send size={16}/> Telegram Chat ID</h3>
               <p style={{color:'#5A7090',fontSize:'13px',marginBottom:'12px'}}>
                 Cara mendapatkan Chat ID:
               </p>
@@ -205,7 +245,7 @@ export default function SettingsPage() {
 
           {/* Quiet hours */}
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'20px 24px'}}>
-            <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px'}}>🌙 Jam Tenang (Jangan Ganggu)</h3>
+            <h3 style={{fontWeight:700,fontSize:'15px',marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><Moon size={16}/> Jam Tenang (Jangan Ganggu)</h3>
             <p style={{color:'#5A7090',fontSize:'13px',marginBottom:'14px'}}>
               Notifikasi ditahan selama jam tenang dan dikirim setelahnya.
             </p>
@@ -217,9 +257,15 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {(channels.includes('WHATSAPP')||channels.includes('TELEGRAM'))&&isPro&&(
+            <button onClick={testNotif} disabled={testing||saving}
+              style={{padding:'14px',background:'white',color:'#1560BD',border:'2px solid #1560BD',borderRadius:'12px',fontWeight:700,cursor:'pointer',fontSize:'15px',opacity:(testing||saving)?0.6:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+              <Send size={16}/>{testing?'Mengirim tes...':'Kirim Tes Notifikasi'}
+            </button>
+          )}
           <button onClick={saveNotif} disabled={saving}
             style={{padding:'14px',background:'#1560BD',color:'white',border:'none',borderRadius:'12px',fontWeight:700,cursor:'pointer',fontSize:'15px',opacity:saving?0.7:1}}>
-            {saving?'⏳ Menyimpan...':'Simpan Pengaturan Notifikasi'}
+            {saving?'Menyimpan...':'Simpan Pengaturan Notifikasi'}
           </button>
         </div>
       )}
@@ -251,7 +297,7 @@ export default function SettingsPage() {
               <div>
                 <label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'5px'}}>Telegram Chat ID</label>
                 <div style={{background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:'8px',padding:'12px',marginBottom:'8px',fontSize:'12px',color:'#1e40af'}}>
-                <p style={{fontWeight:700,margin:'0 0 4px'}}>📋 Cara mendapatkan Telegram ID:</p>
+                <p style={{fontWeight:700,margin:'0 0 4px',display:'flex',alignItems:'center',gap:'6px'}}><ClipboardList size={15}/> Cara mendapatkan Telegram ID:</p>
                 <ol style={{margin:0,paddingLeft:'16px',lineHeight:1.8}}>
                   <li>Buka Telegram, cari <strong>@userinfobot</strong></li>
                   <li>Kirim pesan <strong>/start</strong></li>
@@ -274,11 +320,36 @@ export default function SettingsPage() {
           </div>
           <button onClick={saveProfile} disabled={saving}
             style={{padding:'14px',background:'#1560BD',color:'white',border:'none',borderRadius:'12px',fontWeight:700,cursor:'pointer',fontSize:'15px',opacity:saving?0.7:1}}>
-            {saving?'⏳ Menyimpan...':'Simpan Profil'}
+            {saving?'Menyimpan...':'Simpan Profil'}
           </button>
         </div>
       )}
 
+          <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px',marginTop:'8px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'20px'}}>
+              <div style={{width:'36px',height:'36px',borderRadius:'10px',background:'linear-gradient(135deg,#1560BD,#0F6E56)',display:'flex',alignItems:'center',justifyContent:'center'}}><Target size={18} color="white"/></div>
+              <div><h3 style={{fontWeight:700,margin:0,fontSize:'15px'}}>Profil Bisnis</h3><p style={{fontSize:'12px',color:'#9EB3C8',margin:0}}>AI matching lebih akurat berdasarkan profil kamu</p></div>
+            </div>
+            <div style={{display:'grid',gap:'14px'}}>
+              <div>
+                <label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'8px'}}>Tipe Bisnis / Kebutuhan</label>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(min(100%,160px),1fr))',gap:'8px'}}>
+                  {[{k:'kontraktor',l:'Kontraktor'},{k:'agen_properti',l:'Agen Properti'},{k:'investor',l:'Investor'},{k:'pedagang',l:'Pedagang'},{k:'pencari_kerja',l:'Pencari Kerja'},{k:'pengusaha',l:'Pengusaha'},{k:'mahasiswa',l:'Mahasiswa'},{k:'lainnya',l:'Lainnya'}].map(({k,l})=>(
+                    <button key={k} type="button" onClick={()=>setBizType(k)} style={{padding:'9px 12px',border:`2px solid ${bizType===k?'#1560BD':'#DDE5EF'}`,borderRadius:'10px',background:bizType===k?'#E8F0FB':'white',cursor:'pointer',fontSize:'12px',fontWeight:600,textAlign:'left' as const}}>{l}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'6px'}}>Ceritakan Kebutuhanmu</label>
+                <textarea value={bizDesc} onChange={e=>setBizDesc(e.target.value)} rows={3} placeholder="Contoh: Kontraktor tender konstruksi gedung Jawa Barat 500jt-5 miliar" style={{width:'100%',padding:'10px 12px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit',resize:'vertical' as const,boxSizing:'border-box' as const}}/>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
+                <div><label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'6px'}}>Kota Operasi</label><input value={bizCity} onChange={e=>setBizCity(e.target.value)} placeholder="Jakarta, Bandung" style={{width:'100%',padding:'10px 12px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit',boxSizing:'border-box' as const}}/></div>
+                <div><label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'6px'}}>Range Budget</label><select value={bizBudget} onChange={e=>setBizBudget(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #DDE5EF',borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit',background:'white',boxSizing:'border-box' as const}}><option value="">Pilih</option><option value="<50jt">Di bawah Rp 50 juta</option><option value="50-500jt">Rp 50-500 juta</option><option value="500jt-5m">Rp 500jt-5 miliar</option><option value=">5m">Di atas Rp 5 miliar</option></select></div>
+              </div>
+              <button onClick={async()=>{setBizLoading(true);const r=await fetch('/api/user/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({businessType:bizType,businessDesc:bizDesc,businessCity:bizCity,businessBudget:bizBudget})});if(r.ok){setBizSaved(true);setTimeout(()=>setBizSaved(false),3000)};setBizLoading(false)}} disabled={bizLoading} style={{padding:'12px 24px',background:'#0F6E56',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>{bizLoading?'Menyimpan...':bizSaved?'Tersimpan!':'Simpan Profil Bisnis'}</button>
+            </div>
+          </div>
       {/* ── KEAMANAN ── */}
       {activeTab==='security'&&(
         <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
@@ -304,7 +375,7 @@ export default function SettingsPage() {
           </div>
           <button onClick={savePassword} disabled={saving||!currentPass||!newPass||newPass!==confirmPass}
             style={{padding:'14px',background:'#1560BD',color:'white',border:'none',borderRadius:'12px',fontWeight:700,cursor:'pointer',fontSize:'15px',opacity:(saving||!currentPass||!newPass||newPass!==confirmPass)?0.5:1}}>
-            {saving?'⏳ Mengubah...':'Ganti Password'}
+            {saving?'Mengubah...':'Ganti Password'}
           </button>
 
           <TwoFactorSettings />

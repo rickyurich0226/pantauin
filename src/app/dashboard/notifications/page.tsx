@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-const CAT_ICONS: Record<string,string> = {TENDER:'📋',PROPERTI:'🏠',KENDARAAN:'🚗',BISNIS:'💼',INVESTASI:'📈',LOWONGAN:'👔',BEASISWA:'🎓',BANTUAN:'🤝'}
-const CH_ICONS: Record<string,string> = {EMAIL:'📧',WHATSAPP:'💬',TELEGRAM:'✈️',PUSH:'🔔'}
+import { FileText, Home, Car, Briefcase, TrendingUp, Users, GraduationCap, HeartHandshake, Mail, MessageCircle, Send, Bell, Zap, ThumbsUp, ThumbsDown, Check, Trash2, Target } from 'lucide-react'
+const CAT_ICONS: Record<string,any> = {TENDER:FileText,PROPERTI:Home,KENDARAAN:Car,BISNIS:Briefcase,INVESTASI:TrendingUp,LOWONGAN:Users,BEASISWA:GraduationCap,BANTUAN:HeartHandshake}
+const CH_ICONS: Record<string,any> = {EMAIL:Mail,WHATSAPP:MessageCircle,TELEGRAM:Send,PUSH:Bell}
 const CATS = ['ALL','UNREAD','TENDER','PROPERTI','KENDARAAN','BISNIS','INVESTASI','LOWONGAN','BEASISWA','BANTUAN']
 
 export default function NotificationsPage() {
@@ -12,6 +13,7 @@ export default function NotificationsPage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [feedbackLoading, setFeedbackLoading] = useState<string|null>(null)
+  const [referralNudge, setReferralNudge] = useState<{show: boolean, link: string}>({show: false, link: ''})
   const PER_PAGE = 20
 
   const load = async (p = 1, append = false) => {
@@ -49,6 +51,12 @@ export default function NotificationsPage() {
         body: JSON.stringify({ feedback })
       })
       setNotifs(notifs.map(n => n.id === id ? {...n, feedback} : n))
+      // Momentum terbaik untuk ajak teman: user baru saja bilang notifikasi ini relevan.
+      if (feedback === 'RELEVANT') {
+        fetch('/api/referral').then(r => r.ok ? r.json() : null).then(d => {
+          if (d?.referralLink) setReferralNudge({ show: true, link: d.referralLink })
+        }).catch(() => {})
+      }
     } finally {
       setFeedbackLoading(null)
     }
@@ -73,14 +81,14 @@ export default function NotificationsPage() {
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'24px',flexWrap:'wrap',gap:'12px'}}>
         <div>
-          <h1 style={{fontSize:'24px',fontWeight:800}}>Notifikasi 🔔</h1>
+          <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Notifikasi <Bell size={20}/></h1>
           <p style={{color:'#5A7090',marginTop:'4px',fontSize:'14px'}}>
             {unread > 0 ? <span style={{color:'#1560BD',fontWeight:700}}>{unread} belum dibaca</span> : 'Semua sudah dibaca'}
           </p>
         </div>
         {unread > 0 && (
           <button onClick={() => markRead()} style={{padding:'8px 16px',border:'1px solid #DDE5EF',borderRadius:'8px',background:'white',cursor:'pointer',fontSize:'13px',fontWeight:600,color:'#1560BD'}}>
-            ✓ Tandai semua dibaca
+            Tandai semua dibaca
           </button>
         )}
       </div>
@@ -91,16 +99,16 @@ export default function NotificationsPage() {
           <button key={c} onClick={() => setFilter(c)}
             style={{padding:'6px 14px',borderRadius:'100px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
               background:filter===c?'#1560BD':'#F1F5F9',color:filter===c?'white':'#5A7090'}}>
-            {c==='ALL'?'Semua':c==='UNREAD'?`Belum Dibaca${unread>0?` (${unread})`:''}`:CAT_ICONS[c]+' '+c.charAt(0)+c.slice(1).toLowerCase()}
+            {c==='ALL'?'Semua':c==='UNREAD'?`Belum Dibaca${unread>0?` (${unread})`:''}`:(()=>{const CI=CAT_ICONS[c]; return <span style={{display:'inline-flex',alignItems:'center',gap:'4px'}}>{CI&&<CI size={13}/>}{c.charAt(0)+c.slice(1).toLowerCase()}</span>})()}
           </button>
         ))}
       </div>
 
       {loading && notifs.length === 0 ? (
-        <div style={{textAlign:'center',padding:'48px',color:'#9EB3C8'}}>⏳ Memuat...</div>
+        <div style={{textAlign:'center',padding:'48px',color:'#9EB3C8'}}>Memuat...</div>
       ) : filtered.length === 0 ? (
         <div style={{background:'white',border:'2px dashed #DDE5EF',borderRadius:'16px',padding:'48px',textAlign:'center'}}>
-          <div style={{fontSize:'48px',marginBottom:'12px'}}>🔔</div>
+          <div style={{marginBottom:'12px',display:'flex',justifyContent:'center'}}><Bell size={44} color="#DDE5EF"/></div>
           <h3 style={{fontWeight:700,marginBottom:'8px'}}>Belum ada notifikasi</h3>
           <p style={{color:'#5A7090',fontSize:'14px'}}>Notifikasi akan muncul saat pantauan kamu menemukan peluang baru.</p>
         </div>
@@ -114,9 +122,9 @@ export default function NotificationsPage() {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px',flexWrap:'wrap'}}>
                     {!n.isRead && <span style={{width:'8px',height:'8px',borderRadius:'50%',background:'#1560BD',display:'inline-block',flexShrink:0}}/>}
-                    {n.watch?.category && <span style={{fontSize:'11px',fontWeight:700,padding:'2px 8px',borderRadius:'100px',background:'#E8F0FB',color:'#1560BD'}}>{CAT_ICONS[n.watch.category]} {n.watch.category}</span>}
-                    {n.channel && <span style={{fontSize:'11px',color:'#9EB3C8'}}>{CH_ICONS[n.channel]} {n.channel}</span>}
-                    {n.matchScore > 0 && <span style={{fontSize:'11px',color:'#0F6E56',fontWeight:600}}>⚡ {Math.round(n.matchScore*100)}% match</span>}
+                    {n.watch?.category && <span style={{fontSize:'11px',fontWeight:700,padding:'2px 8px',borderRadius:'100px',background:'#E8F0FB',color:'#1560BD',display:'inline-flex',alignItems:'center',gap:'3px'}}>{(()=>{const CI=CAT_ICONS[n.watch.category]; return CI?<CI size={11}/>:null})()}{n.watch.category}</span>}
+                    {n.channel && <span style={{fontSize:'11px',color:'#9EB3C8',display:'inline-flex',alignItems:'center',gap:'3px'}}>{(()=>{const CI=CH_ICONS[n.channel]; return CI?<CI size={11}/>:null})()}{n.channel}</span>}
+                    {n.matchScore > 0 && <span style={{fontSize:'11px',color:'#0F6E56',fontWeight:600,display:'inline-flex',alignItems:'center',gap:'2px'}}><Zap size={11}/> {Math.round(n.matchScore*100)}% match</span>}
                   </div>
                   <h3 style={{fontWeight:700,fontSize:'14px',marginBottom:'6px',color:'#0D1B2A',lineHeight:1.4}}>{n.title}</h3>
                   <p style={{fontSize:'13px',color:'#5A7090',lineHeight:1.6,marginBottom:'8px'}}>{n.body?.slice(0,200)}{n.body?.length>200?'...':''}</p>
@@ -134,7 +142,7 @@ export default function NotificationsPage() {
                       target="_blank" rel="noopener noreferrer"
                       onClick={e => e.stopPropagation()}
                       style={{fontSize:'12px',color:'#0F6E56',fontWeight:600,textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'3px'}}>
-                      💬 Bagikan ke WA
+                      <MessageCircle size={13}/> Bagikan ke WA
                     </a>
                   </div>
 
@@ -150,7 +158,7 @@ export default function NotificationsPage() {
                         color: n.feedback==='RELEVANT' ? '#0F6E56' : '#9EB3C8',
                         cursor:'pointer',fontSize:'12px',fontWeight:n.feedback==='RELEVANT'?700:400,
                         transition:'all .15s'}}>
-                      {feedbackLoading===n.id+'RELEVANT' ? '...' : '👍 Ya'}
+                      {feedbackLoading===n.id+'RELEVANT' ? '...' : <span style={{display:'inline-flex',alignItems:'center',gap:'3px'}}><ThumbsUp size={12}/> Ya</span>}
                     </button>
                     <button
                       onClick={() => sendFeedback(n.id, 'NOT_RELEVANT')}
@@ -161,15 +169,15 @@ export default function NotificationsPage() {
                         color: n.feedback==='NOT_RELEVANT' ? '#EF4444' : '#9EB3C8',
                         cursor:'pointer',fontSize:'12px',fontWeight:n.feedback==='NOT_RELEVANT'?700:400,
                         transition:'all .15s'}}>
-                      {feedbackLoading===n.id+'NOT_RELEVANT' ? '...' : '👎 Tidak'}
+                      {feedbackLoading===n.id+'NOT_RELEVANT' ? '...' : <span style={{display:'inline-flex',alignItems:'center',gap:'3px'}}><ThumbsDown size={12}/> Tidak</span>}
                     </button>
-                    {n.feedback && <span style={{fontSize:'11px',color:'#9EB3C8'}}>✓ Terima kasih!</span>}
+                    {n.feedback && <span style={{fontSize:'11px',color:'#9EB3C8',display:'inline-flex',alignItems:'center',gap:'3px'}}><Check size={11}/> Terima kasih!</span>}
                   </div>
 
                 </div>
                 <button onClick={e=>{e.stopPropagation();deleteNotif(n.id)}}
-                  style={{padding:'4px 8px',border:'1px solid #FEE2E2',borderRadius:'6px',background:'white',color:'#EF4444',cursor:'pointer',fontSize:'11px',flexShrink:0}}>
-                  🗑
+                  style={{padding:'4px 8px',border:'1px solid #FEE2E2',borderRadius:'6px',background:'white',color:'#EF4444',cursor:'pointer',fontSize:'11px',flexShrink:0,display:'flex',alignItems:'center'}}>
+                  <Trash2 size={13}/>
                 </button>
               </div>
             </div>
@@ -184,7 +192,22 @@ export default function NotificationsPage() {
           </button>
         </div>
       )}
-      {loading && notifs.length > 0 && <div style={{textAlign:'center',padding:'20px',color:'#9EB3C8'}}>⏳ Memuat...</div>}
+      {loading && notifs.length > 0 && <div style={{textAlign:'center',padding:'20px',color:'#9EB3C8'}}>Memuat...</div>}
+      {referralNudge.show && (
+        <div style={{position:'fixed',bottom:'20px',right:'20px',maxWidth:'340px',background:'linear-gradient(135deg,#0F6E56,#1560BD)',borderRadius:'14px',padding:'18px 20px',boxShadow:'0 8px 32px rgba(0,0,0,0.2)',zIndex:1000,color:'white'}}>
+          <button onClick={()=>setReferralNudge({show:false,link:''})} style={{position:'absolute',top:'8px',right:'10px',background:'none',border:'none',color:'rgba(255,255,255,0.6)',cursor:'pointer',fontSize:'16px'}}>×</button>
+          <p style={{fontWeight:700,fontSize:'14px',margin:'0 0 6px',display:'flex',alignItems:'center',gap:'6px'}}><Target size={16}/> Senang bisa bantu!</p>
+          <p style={{fontSize:'13px',opacity:0.9,margin:'0 0 12px',lineHeight:1.5}}>Ajak teman kamu pakai pantau.in juga — kalian berdua dapat bonus Pro gratis.</p>
+          <div style={{display:'flex',gap:'8px'}}>
+            <button onClick={()=>{navigator.clipboard.writeText(referralNudge.link);setReferralNudge({show:false,link:''})}} style={{flex:1,background:'white',color:'#0F6E56',border:'none',borderRadius:'8px',padding:'8px 12px',fontWeight:700,fontSize:'13px',cursor:'pointer'}}>
+              Salin Link
+            </button>
+            <a href="/dashboard/referral" style={{flex:1,textAlign:'center',background:'rgba(255,255,255,0.15)',color:'white',border:'1px solid rgba(255,255,255,0.3)',borderRadius:'8px',padding:'8px 12px',fontWeight:600,fontSize:'13px',textDecoration:'none'}}>
+              Lihat Detail
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

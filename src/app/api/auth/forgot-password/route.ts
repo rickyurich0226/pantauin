@@ -1,3 +1,4 @@
+import { sendEmailCritical } from '@/lib/notifier'
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { rateLimit } from '@/lib/ratelimit'
@@ -38,17 +39,7 @@ export async function POST(req: NextRequest) {
   const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    })
-    await transporter.sendMail({
-      from: '"pantau.in" <' + process.env.SMTP_USER + '>',
-      to: user.email!,
-      subject: '🔐 Reset Password Pantau.in',
-      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+    await sendEmailCritical(user.email!, '🔐 Reset Password Pantau.in', `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
         <h2 style="color:#0D1B2A">Reset Password</h2>
         <p style="color:#5A7090">Hei <strong>${user.name}</strong>, kami menerima permintaan reset password untuk akun kamu.</p>
         <p style="color:#5A7090">Klik tombol di bawah untuk membuat password baru. Link ini berlaku selama <strong>1 jam</strong>.</p>
@@ -59,8 +50,7 @@ export async function POST(req: NextRequest) {
         </div>
         <p style="color:#9EB3C8;font-size:12px">Jika kamu tidak meminta reset password, abaikan email ini. Password kamu tidak akan berubah.</p>
         <p style="color:#9EB3C8;font-size:12px">Link: ${resetUrl}</p>
-      </div>`,
-    })
+      </div>`,)
   } catch (err) {
     console.error('[ForgotPassword] Email error:', err)
   }

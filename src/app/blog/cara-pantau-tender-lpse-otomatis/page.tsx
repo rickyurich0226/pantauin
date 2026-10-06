@@ -57,16 +57,16 @@ Sistem seperti ini bekerja dengan cara:
 
 Berikut langkah-langkahnya:
 
-**Langkah 1: Daftar akun gratis**
+<strong style={{color:"#0D1B2A"}}>Langkah 1: Daftar akun gratis</strong>
 Buka pantau.in dan klik "Daftar Gratis". Tidak perlu kartu kredit.
 
-**Langkah 2: Buat pantauan pertama**
+<strong style={{color:"#0D1B2A"}}>Langkah 2: Buat pantauan pertama</strong>
 Klik "Tambah Pantau.in" → pilih kategori "Tender & Pengadaan" → tulis deskripsi pencarian dalam bahasa natural, misalnya: "konstruksi jalan kabupaten Jawa Tengah" atau "pengadaan komputer server instansi pemerintah".
 
-**Langkah 3: Atur filter lanjutan (opsional, Pro)**
+<strong style={{color:"#0D1B2A"}}>Langkah 3: Atur filter lanjutan (opsional, Pro)</strong>
 Tambahkan kata kunci wajib (AND) seperti "SBU" atau "IUJK" dan kata kunci yang ingin dikecualikan (NOT) seperti "konsultansi" jika kamu hanya mencari pekerjaan konstruksi fisik.
 
-**Langkah 4: Pilih channel notifikasi**
+<strong style={{color:"#0D1B2A"}}>Langkah 4: Pilih channel notifikasi</strong>
 Pilih Email (gratis) atau tambahkan WhatsApp dan Telegram (Pro). Atur frekuensi: real-time untuk tender bernilai besar, atau digest harian untuk monitoring rutin.`],
           ['Tips Membuat Kata Kunci yang Efektif', `Kata kunci yang terlalu umum akan menghasilkan terlalu banyak notifikasi tidak relevan. Terlalu spesifik justru bisa melewatkan peluang.
 

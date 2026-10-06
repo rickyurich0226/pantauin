@@ -5,3 +5,9 @@ docker-compose.yml
 app-secrets.env
 dist/
 coverage/
+*.log
+*-state.json
+__pycache__/
+*.bak
+*.bak-*
+*.bak.*

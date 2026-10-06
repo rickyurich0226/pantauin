@@ -1,4 +1,5 @@
 'use client'
+import { BarChart3, DollarSign, Wrench, Users, Radio, CreditCard, TrendingUp, Settings, FileText, Plug, ClipboardList, Crown, CheckCircle, XCircle, Package, Eye, Inbox, AlertTriangle, Unlock, MessageCircle, RefreshCw, Star, Search, ShieldCheck, Rocket, Mail, Send, Bell } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -8,6 +9,7 @@ export default function SuperAdminPage() {
   const router = useRouter()
   const user = session?.user as any
   const [activeTab, setActiveTab] = useState('overview')
+  const [health, setHealth] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [applying, setApplying] = useState(false)
   const [saved, setSaved] = useState('')
@@ -21,6 +23,11 @@ export default function SuperAdminPage() {
   const [newSource, setNewSource] = useState({ source: '', category: 'TENDER', url: '', type: 'RSS', intervalMinutes: 30 })
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null)
   const [savingSource, setSavingSource] = useState(false)
+  const [sourcesPage, setSourcesPage] = useState(1)
+  const [sourcesTotalPages, setSourcesTotalPages] = useState(1)
+  const [sourcesSummary, setSourcesSummary] = useState({ total: 0, active: 0, error: 0, totalItems: 0 })
+  const [sourceFilter, setSourceFilter] = useState({ search: '', category: '', status: '' })
+  const SOURCES_PAGE_SIZE = 50
 
   // Integration config state
   const [integrations, setIntegrations] = useState({
@@ -75,10 +82,15 @@ export default function SuperAdminPage() {
 
   useEffect(()=>{
     if(activeTab!=='sources') return
-    const interval = setInterval(()=>{
-      fetch('/api/superadmin/sources').then(r=>r.json()).then(d=>{ if(d.sources){ setSources(d.sources); setLastRefresh(new Date()) } })
-    }, 30000)
+    const interval = setInterval(()=>{ fetchSources(sourcesPage) }, 30000)
     return ()=>clearInterval(interval)
+  }, [activeTab, sourcesPage, sourceFilter])
+
+  useEffect(()=>{
+    if(activeTab!=='health') return
+    fetch('/api/superadmin/health').then(r=>r.json()).then(setHealth).catch(()=>{})
+    const iv = setInterval(()=>fetch('/api/superadmin/health').then(r=>r.json()).then(setHealth).catch(()=>{}), 30000)
+    return ()=>clearInterval(iv)
   }, [activeTab])
 
   const fetchConfig = async()=>{
@@ -88,10 +100,20 @@ export default function SuperAdminPage() {
     if(d.match_threshold!==undefined) setConfig(c=>({...c,match_threshold:d.match_threshold,free_max_watches:d.free_max_watches,free_max_notifs:d.free_max_notifs}))
     if(d.referral_enabled!==undefined) setReferral(r=>({...r,referral_enabled:d.referral_enabled,referral_reward_referrer_days:d.referral_reward_referrer_days??7,referral_reward_referee_days:d.referral_reward_referee_days??7,referral_reward_on_upgrade_days:d.referral_reward_on_upgrade_days??30,referral_discount_pro:d.referral_discount_pro??10,referral_discount_biz:d.referral_discount_biz??15}))
   }
-  const fetchSources = async()=>{
-    const res = await fetch('/api/superadmin/sources')
+  const fetchSources = async(page=sourcesPage)=>{
+    const params = new URLSearchParams({ page: String(page), pageSize: String(SOURCES_PAGE_SIZE) })
+    if(sourceFilter.search.trim()) params.set('search', sourceFilter.search.trim())
+    if(sourceFilter.category) params.set('category', sourceFilter.category)
+    if(sourceFilter.status) params.set('status', sourceFilter.status)
+    const res = await fetch(`/api/superadmin/sources?${params}`)
     const data = await res.json()
-    if(data.sources) setSources(data.sources)
+    if(data.sources){
+      setSources(data.sources)
+      setSourcesPage(page)
+      setSourcesTotalPages(data.totalPages||1)
+      if(data.summary) setSourcesSummary(data.summary)
+      setLastRefresh(new Date())
+    }
   }
 
   const fetchRevenue = async()=>{
@@ -113,21 +135,24 @@ export default function SuperAdminPage() {
     const data = await res.json()
     setSavingSource(false)
     if(!res.ok) return showMsg('err',data.error||'Gagal menambah sumber')
-    showMsg('ok','✅ Sumber monitoring ditambahkan')
+    showMsg('ok','Sumber monitoring ditambahkan')
     setNewSource({source:'',category:'TENDER',url:'',type:'RSS',intervalMinutes:30})
-    fetchSources()
+    fetchSources(1)
   }
 
   const toggleSource = async(id:string, isActive:boolean)=>{
     await fetch('/api/superadmin/sources',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,isActive:!isActive})})
-    fetchSources()
+    fetchSources(sourcesPage)
   }
 
   const deleteSource = async(id:string)=>{
     if(!confirm('Hapus sumber monitoring ini?')) return
     await fetch('/api/superadmin/sources',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})})
-    fetchSources()
+    fetchSources(sourcesPage)
   }
+
+  const applySourceFilter = ()=>{ fetchSources(1) }
+  const resetSourceFilter = ()=>{ setSourceFilter({search:'',category:'',status:''}); fetchSources(1) }
 
   const fetchStats = async()=>{
     const res = await fetch('/api/admin/stats')
@@ -162,13 +187,13 @@ export default function SuperAdminPage() {
           if(d.site_name!==undefined) setConfig(d)
           if(d.footer_fitur!==undefined) setConfig(d)
         })
-        showMsg('ok','✅ Konfigurasi berhasil disimpan!')
+        showMsg('ok','Konfigurasi berhasil disimpan!')
       } else {
-        showMsg('err','❌ Gagal menyimpan: '+(data.error||'Unknown error'))
+        showMsg('err','Gagal menyimpan: '+(data.error||'Unknown error'))
       }
     } catch(e) {
       setSaving(false)
-      showMsg('err','❌ Koneksi gagal. Coba lagi.')
+      showMsg('err','Koneksi gagal. Coba lagi.')
     }
   }
 
@@ -181,10 +206,10 @@ export default function SuperAdminPage() {
         body:JSON.stringify(integrations)
       })
       const data = await res.json()
-      if(res.ok) showMsg('ok','✅ '+data.message)
-      else showMsg('err','❌ '+data.error)
+      if(res.ok) showMsg('ok',''+data.message)
+      else showMsg('err',''+data.error)
     } catch {
-      showMsg('err','❌ Gagal terhubung ke server')
+      showMsg('err','Gagal terhubung ke server')
     }
     setApplying(false)
   }
@@ -194,12 +219,12 @@ export default function SuperAdminPage() {
   }
 
   const TABS = [
-    {k:'overview',l:'📊 Overview'},{k:'revenue',l:'💰 Revenue'},
-    {k:'users',l:'👥 Semua User'},{k:'sources',l:'📡 Sumber Monitoring'},
-    {k:'pricing',l:'💳 Harga & Plan'},
-    {k:'engagement',l:'📈 Engagement'},
-    {k:'config',l:'⚙️ Konfigurasi'},{k:'content',l:'📝 Konten'},
-    {k:'integrations',l:'🔌 Integrasi'},{k:'audit',l:'📋 Audit Log'},
+    {k:'overview',l:'Overview',icon:BarChart3},{k:'revenue',l:'Revenue',icon:DollarSign},{k:'health',l:'System Health',icon:Wrench},
+    {k:'users',l:'Semua User',icon:Users},{k:'sources',l:'Sumber Monitoring',icon:Radio},
+    {k:'pricing',l:'Harga & Plan',icon:CreditCard},
+    {k:'engagement',l:'Engagement',icon:TrendingUp},
+    {k:'config',l:'Konfigurasi',icon:Settings},{k:'content',l:'Konten',icon:FileText},
+    {k:'integrations',l:'Integrasi',icon:Plug},{k:'audit',l:'Audit Log',icon:ClipboardList},
   ]
 
   const inp={width:'100%',padding:'10px 12px',border:'1.5px solid #DDE5EF',borderRadius:'8px',fontSize:'14px',outline:'none',fontFamily:'inherit',background:'white'} as React.CSSProperties
@@ -210,7 +235,7 @@ export default function SuperAdminPage() {
     <div>
       <div style={{marginBottom:'24px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'4px'}}>
-          <h1 style={{fontSize:'24px',fontWeight:800}}>Super Admin 👑</h1>
+          <h1 style={{fontSize:'24px',fontWeight:800,display:'flex',alignItems:'center',gap:'8px'}}>Super Admin <Crown size={20}/></h1>
           <span style={{fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'100px',background:'#1E293B',color:'#E2E8F0'}}>FULL ACCESS</span>
         </div>
         <p style={{color:'#5A7090',fontSize:'14px'}}>Kendali penuh platform Pantau.in.</p>
@@ -226,7 +251,7 @@ export default function SuperAdminPage() {
           display:'flex',alignItems:'center',gap:'12px',
           marginBottom:'16px',animation:'slideIn .2s ease'
         }}>
-          <span style={{fontSize:'20px'}}>{msg.type==='ok'?'✅':'❌'}</span>
+          <span style={{fontSize:'20px',display:'flex'}}>{msg.type==='ok'?<CheckCircle size={20}/>:<XCircle size={20}/>}</span>
           <span style={{flex:1}}>{msg.text}</span>
           <button onClick={()=>setMsg(null)} style={{background:'rgba(255,255,255,0.25)',border:'none',color:'white',borderRadius:'6px',width:'28px',height:'28px',cursor:'pointer',fontSize:'16px',fontWeight:700}}>✕</button>
         </div>
@@ -239,26 +264,96 @@ export default function SuperAdminPage() {
           <button key={t.k} onClick={()=>setActiveTab(t.k)}
             style={{padding:'8px 14px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
               background:activeTab===t.k?'#1560BD':'#F8FAFC',color:activeTab===t.k?'white':'#5A7090'}}>
-            {t.l}
+            <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><t.icon size={14}/>{t.l}</span>
           </button>
         ))}
       </div>
 
       {/* ENGAGEMENT */}
+      {activeTab==='health'&&(
+        <div style={{display:'grid',gap:'20px'}}>
+          {!health ? (
+            <p style={{color:'#9EB3C8',textAlign:'center',padding:'40px'}}>Memuat data sistem...</p>
+          ) : (
+            <>
+              {/* Status Cards */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px'}}>
+                {[
+                  {label:'Fetch Sources', age: health.fetch?.ageMinutes, status: health.fetch?.status, detail: `${health.fetch?.itemsToday?.toLocaleString('id-ID')} item hari ini`},
+                  {label:'Matching Engine', age: health.matching?.ageMinutes, status: health.matching?.status, detail: `Terakhir match ${health.matching?.ageMinutes} mnt lalu`},
+                  {label:'Dispatch Notif', age: health.dispatch?.ageMinutes, status: health.dispatch?.status, detail: `${health.dispatch?.notifsToday} notif hari ini`},
+                ].map(s=>(
+                  <div key={s.label} style={{background: s.status==='ok'?'#E1F5EE': s.status==='warning'?'#FFF8E1':'#FFEBEE', borderRadius:'12px', padding:'16px', border:`1px solid ${s.status==='ok'?'#0F6E56':s.status==='warning'?'#F9A825':'#D32F2F'}`}}>
+                    <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
+                      <div style={{width:'10px',height:'10px',borderRadius:'50%',background:s.status==='ok'?'#0F6E56':s.status==='warning'?'#F9A825':'#D32F2F'}}/>
+                      <span style={{fontWeight:700,fontSize:'13px',color:'#0D1B2A'}}>{s.label}</span>
+                    </div>
+                    <p style={{fontSize:'12px',color:'#5A7090',margin:'0 0 4px'}}>{s.detail}</p>
+                    <p style={{fontSize:'11px',color:'#9EB3C8',margin:0}}>{s.age} menit lalu</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Stats Grid */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'12px'}}>
+                {[
+                  [Radio,'Sumber Aktif',`${health.fetch?.activeSources}/${health.fetch?.totalSources}`],
+                  [Package,'Total Item DB',health.fetch?.totalItems?.toLocaleString('id-ID')],
+                  [Bell,'Total Notifikasi',health.dispatch?.notifsTotal?.toLocaleString('id-ID')],
+                  [Users,'User Aktif (7hr)',health.users?.activeUsers],
+                  [Eye,'Watch Aktif',health.users?.activeWatches],
+                  [Inbox,'Notif Hari Ini',health.dispatch?.notifsToday],
+                ].map(([Icon,label,val]:any)=>(
+                  <div key={label as string} style={{background:'#F8FAFC',borderRadius:'10px',padding:'14px',border:'1px solid #E8EEF5',textAlign:'center'}}>
+                    <div style={{marginBottom:'4px',display:'flex',justifyContent:'center'}}><Icon size={22} color="#1560BD"/></div>
+                    <div style={{fontSize:'18px',fontWeight:700,color:'#0D1B2A'}}>{val as string}</div>
+                    <div style={{fontSize:'11px',color:'#9EB3C8',marginTop:'2px'}}>{label as string}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Daily Notif Chart */}
+              <div style={{background:'#F8FAFC',borderRadius:'12px',padding:'20px',border:'1px solid #E8EEF5'}}>
+                <h3 style={{fontWeight:700,fontSize:'14px',marginBottom:'16px',color:'#0D1B2A',display:'flex',alignItems:'center',gap:'6px'}}><TrendingUp size={16}/> Notifikasi 7 Hari Terakhir</h3>
+                <div style={{display:'flex',gap:'8px',alignItems:'flex-end',height:'80px'}}>
+                  {(health.dailyNotifs||[]).map((d:any,i:number)=>{
+                    const max = Math.max(...(health.dailyNotifs||[]).map((x:any)=>x.count),1)
+                    const h = Math.max(4, Math.round((d.count/max)*80))
+                    return (
+                      <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
+                        <span style={{fontSize:'9px',color:'#9EB3C8'}}>{d.count}</span>
+                        <div style={{width:'100%',height:`${h}px`,background:'#1560BD',borderRadius:'3px 3px 0 0'}}/>
+                        <span style={{fontSize:'9px',color:'#9EB3C8'}}>{new Date(d.date).toLocaleDateString('id-ID',{weekday:'short'})}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Refresh */}
+              <button onClick={()=>fetch('/api/superadmin/health').then(r=>r.json()).then(setHealth)}
+                style={{padding:'10px',background:'#1560BD',color:'white',border:'none',borderRadius:'8px',cursor:'pointer',fontWeight:600,fontSize:'13px'}}>
+                <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><RefreshCw size={14}/> Refresh Sekarang</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       {activeTab==='engagement'&&(
         <div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'16px',marginBottom:'24px'}}>
             {[
-              ['Total User', engagement.totalUsers||0, '👥'],
-              ['Bikin Pantauan', (engagement.usersWithWatch||0)+' ('+(engagement.watchActivationRate||0)+'%)', '✅'],
-              ['Belum Bikin Pantauan', engagement.usersWithoutWatch||0, '⚠️'],
-              ['Login 7 Hari', engagement.usersLoggedIn7d||0, '🔓'],
-              ['Notif 7 Hari', engagement.totalNotifs7d||0, '🔔'],
-              ['Tingkat Feedback', (engagement.feedback?.feedbackRate||0)+'%', '💬'],
-            ].map(([l,v,i])=>(
+              ['Total User', engagement.totalUsers||0, Users],
+              ['Bikin Pantauan', (engagement.usersWithWatch||0)+' ('+(engagement.watchActivationRate||0)+'%)', CheckCircle],
+              ['Belum Bikin Pantauan', engagement.usersWithoutWatch||0, AlertTriangle],
+              ['Login 7 Hari', engagement.usersLoggedIn7d||0, Unlock],
+              ['Notif 7 Hari', engagement.totalNotifs7d||0, Bell],
+              ['Tingkat Feedback', (engagement.feedback?.feedbackRate||0)+'%', MessageCircle],
+            ].map(([l,v,Icon]:any)=>(
               <div key={String(l)} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'14px',padding:'18px'}}>
                 <p style={{fontSize:'11px',fontWeight:700,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:'6px'}}>{l}</p>
-                <p style={{fontSize:'22px',fontWeight:800,margin:0}}>{String(i)} {String(v)}</p>
+                <p style={{fontSize:'22px',fontWeight:800,margin:0,display:'flex',alignItems:'center',gap:'8px'}}><Icon size={18} color="#1560BD"/> {String(v)}</p>
               </div>
             ))}
           </div>
@@ -312,13 +407,13 @@ export default function SuperAdminPage() {
 
         <div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'16px',marginBottom:'24px'}}>
-            {[['Total Revenue','Rp '+(revenue.totalRevenue||0).toLocaleString('id-ID'),'💰'],['MRR','Rp '+(revenue.mrr||0).toLocaleString('id-ID'),'📈'],
-              ['Total User',stats.totalUsers||0,'👥'],['Berbayar',stats.paidUsers||0,'⭐'],
-              ['Watch Aktif',stats.totalWatches||0,'🔍'],['Sumber Aktif',sources.filter(s=>s.isActive).length,'📡']
-            ].map(([l,v,i])=>(
+            {[['Total Revenue','Rp '+(revenue.totalRevenue||0).toLocaleString('id-ID'),DollarSign],['MRR','Rp '+(revenue.mrr||0).toLocaleString('id-ID'),TrendingUp],
+              ['Total User',stats.totalUsers||0,Users],['Berbayar',stats.paidUsers||0,Star],
+              ['Watch Aktif',stats.totalWatches||0,Search],['Sumber Aktif',sources.filter(s=>s.isActive).length,Radio]
+            ].map(([l,v,Icon]:any)=>(
               <div key={String(l)} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'14px',padding:'18px'}}>
                 <p style={{fontSize:'11px',fontWeight:700,color:'#5A7090',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:'6px'}}>{l}</p>
-                <p style={{fontSize:'22px',fontWeight:800,margin:0}}>{String(i)} {String(v)}</p>
+                <p style={{fontSize:'22px',fontWeight:800,margin:0,display:'flex',alignItems:'center',gap:'8px'}}><Icon size={18} color="#1560BD"/> {String(v)}</p>
               </div>
             ))}
           </div>
@@ -449,7 +544,7 @@ export default function SuperAdminPage() {
       {activeTab==='pricing'&&(
         <div>
           <div style={{background:'#FEF3C7',border:'1px solid #FCD34D',borderRadius:'12px',padding:'14px 18px',marginBottom:'20px',display:'flex',gap:'10px'}}>
-            <span>⚠️</span>
+            <span><AlertTriangle size={16} color="#92400E"/></span>
             <p style={{fontSize:'13px',color:'#92400E',margin:0}}>Perubahan harga berlaku untuk transaksi baru. Pelanggan existing tidak terpengaruh sampai renewal.</p>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px',marginBottom:'20px'}}>
@@ -491,7 +586,7 @@ export default function SuperAdminPage() {
           </div>
           <button onClick={()=>saveSection('pricing')} disabled={saving}
             style={{padding:'12px 28px',background:saved==='pricing'?'#0F6E56':'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>
-            {saving?'⏳ Menyimpan...':saved==='pricing'?'✅ Tersimpan!':'Simpan Perubahan Harga'}
+            {saving?'Menyimpan...':saved==='pricing'?'Tersimpan!':'Simpan Perubahan Harga'}
           </button>
         </div>
       )}
@@ -500,7 +595,7 @@ export default function SuperAdminPage() {
       {activeTab==='config'&&(
         <div style={{display:'grid',gap:'16px'}}>
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-            <h3 style={{fontWeight:700,marginBottom:'16px'}}>⚙️ Pengaturan Platform</h3>
+            <h3 style={{fontWeight:700,marginBottom:'16px',display:'flex',alignItems:'center',gap:'6px'}}><Settings size={16}/> Pengaturan Platform</h3>
             <div style={{display:'grid',gap:'14px'}}>
               <div><label style={{display:'block',fontSize:'13px',fontWeight:600,marginBottom:'5px'}}>Nama Platform</label>
                 <input value={config.site_name} onChange={e=>setConfig({...config,site_name:e.target.value})} style={inp}/></div>
@@ -540,7 +635,7 @@ export default function SuperAdminPage() {
           </div>
           <button onClick={()=>saveSection('config')} disabled={saving}
             style={{padding:'12px 28px',background:saved==='config'?'#0F6E56':'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>
-            {saving?'⏳ Menyimpan...':saved==='config'?'✅ Tersimpan!':'Simpan Konfigurasi'}
+            {saving?'Menyimpan...':saved==='config'?'Tersimpan!':'Simpan Konfigurasi'}
           </button>
         </div>
       )}
@@ -548,7 +643,7 @@ export default function SuperAdminPage() {
       {/* CONTENT */}
       {activeTab==='content'&&(
         <div style={{display:'grid',gap:'16px'}}>
-          {[['terms','📄 Syarat & Ketentuan'],['privacy','🔒 Kebijakan Privasi'],['about','ℹ️ Tentang Pantau.in']].map(([key,label])=>(
+          {[['terms','Syarat & Ketentuan'],['privacy','Kebijakan Privasi'],['about','Tentang Pantau.in']].map(([key,label])=>(
             <div key={key} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
               <h3 style={{fontWeight:700,marginBottom:'14px'}}>{label}</h3>
               <textarea value={(legal as any)[key]} onChange={e=>setLegal({...legal,[key]:e.target.value})}
@@ -557,7 +652,7 @@ export default function SuperAdminPage() {
           ))}
           <button onClick={()=>saveSection('content')} disabled={saving}
             style={{padding:'12px 28px',background:saved==='content'?'#0F6E56':'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>
-            {saving?'⏳ Menyimpan...':saved==='content'?'✅ Tersimpan!':'Simpan Konten'}
+            {saving?'Menyimpan...':saved==='content'?'Tersimpan!':'Simpan Konten'}
           </button>
         </div>
       )}
@@ -566,7 +661,7 @@ export default function SuperAdminPage() {
 
       {activeTab==='referral'&&<div style={{display:'grid',gap:'20px'}}>
         <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-          <h3 style={{fontWeight:700,marginBottom:'20px',fontSize:'16px'}}>⚙️ Pengaturan Referral Program</h3>
+          <h3 style={{fontWeight:700,marginBottom:'20px',fontSize:'16px',display:'flex',alignItems:'center',gap:'6px'}}><Settings size={16}/> Pengaturan Referral Program</h3>
           <div style={{display:'grid',gap:'16px'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px',background:'#F8FAFC',borderRadius:'10px'}}>
               <div><p style={{fontWeight:700,margin:0}}>Aktifkan Referral Program</p><p style={{fontSize:'12px',color:'#9EB3C8',margin:0}}>User bisa ajak teman dan dapat reward</p></div>
@@ -593,7 +688,7 @@ export default function SuperAdminPage() {
             </div>
             <button onClick={()=>saveSection('referral')} disabled={saving}
               style={{padding:'12px',background:'#1560BD',color:'white',border:'none',borderRadius:'10px',fontWeight:700,cursor:'pointer',fontSize:'14px'}}>
-              {saving?'⏳ Menyimpan...':'💾 Simpan Pengaturan Referral'}
+              {saving?'Menyimpan...':'Simpan Pengaturan Referral'}
             </button>
             {saved&&<p style={{color:'#0F6E56',fontWeight:600,textAlign:'center',margin:0}}>{saved}</p>}
           </div>
@@ -614,7 +709,7 @@ export default function SuperAdminPage() {
 
           {/* WhatsApp */}
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-            <h3 style={{fontWeight:700,marginBottom:'4px'}}>💬 WhatsApp Business API</h3>
+            <h3 style={{fontWeight:700,marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><MessageCircle size={16}/> WhatsApp Business API</h3>
             <p style={{fontSize:'13px',color:'#5A7090',marginBottom:'16px'}}>
               Dari <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" style={{color:'#1560BD'}}>developers.facebook.com</a> → My Apps → WhatsApp → API Setup
             </p>
@@ -635,7 +730,7 @@ export default function SuperAdminPage() {
 
           {/* Telegram */}
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-            <h3 style={{fontWeight:700,marginBottom:'4px'}}>✈️ Telegram Bot</h3>
+            <h3 style={{fontWeight:700,marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><Send size={16}/> Telegram Bot</h3>
             <p style={{fontSize:'13px',color:'#5A7090',marginBottom:'16px'}}>
               Chat <strong>@BotFather</strong> di Telegram → /newbot → ikuti instruksi → copy token
             </p>
@@ -668,7 +763,7 @@ export default function SuperAdminPage() {
               <div>
                 <p style={{fontWeight:600,fontSize:'14px',margin:0}}>Mode Production</p>
                 <p style={{fontSize:'12px',color:'#92400E',margin:0}}>
-                  {integrations.midtrans_is_production?'⚠️ LIVE — Transaksi nyata!':'🧪 Sandbox — Testing mode'}
+                  {integrations.midtrans_is_production?'LIVE — Transaksi nyata!':'Sandbox — Testing mode'}
                 </p>
               </div>
               <button onClick={()=>setIntegrations({...integrations,midtrans_is_production:!integrations.midtrans_is_production})}
@@ -687,7 +782,7 @@ export default function SuperAdminPage() {
 
           {/* Email SMTP */}
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-            <h3 style={{fontWeight:700,marginBottom:'4px'}}>📧 Email SMTP</h3>
+            <h3 style={{fontWeight:700,marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><Mail size={16}/> Email SMTP</h3>
             <p style={{fontSize:'13px',color:'#5A7090',marginBottom:'16px'}}>
               Gmail: Google Account → Security → 2-Step Verification → App Passwords → Generate
             </p>
@@ -718,7 +813,7 @@ export default function SuperAdminPage() {
 
           {/* reCAPTCHA */}
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'24px'}}>
-            <h3 style={{fontWeight:700,marginBottom:'4px'}}>🛡️ Google reCAPTCHA v3</h3>
+            <h3 style={{fontWeight:700,marginBottom:'4px',display:'flex',alignItems:'center',gap:'6px'}}><ShieldCheck size={16}/> Google reCAPTCHA v3</h3>
             <p style={{fontSize:'13px',color:'#5A7090',marginBottom:'16px'}}>
               Dari <a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer" style={{color:'#1560BD'}}>google.com/recaptcha/admin</a> → Buat situs baru → pilih reCAPTCHA v3 → domain: pantau.in
             </p>
@@ -739,7 +834,7 @@ export default function SuperAdminPage() {
 
           {/* APPLY TO SERVER BUTTON */}
           <div style={{background:'linear-gradient(135deg,#0D1B2A,#1560BD)',borderRadius:'16px',padding:'24px',textAlign:'center'}}>
-            <h3 style={{color:'white',fontWeight:800,fontSize:'18px',marginBottom:'8px'}}>🚀 Terapkan ke Server</h3>
+            <h3 style={{color:'white',fontWeight:800,fontSize:'18px',marginBottom:'8px',display:'flex',alignItems:'center',gap:'8px'}}><Rocket size={18}/> Terapkan ke Server</h3>
             <p style={{color:'rgba(255,255,255,0.75)',fontSize:'13px',marginBottom:'20px',maxWidth:'400px',margin:'0 auto 20px'}}>
               Klik tombol ini untuk menyimpan semua API keys ke server dan restart otomatis. Proses memakan waktu ±10 detik.
             </p>
@@ -747,7 +842,7 @@ export default function SuperAdminPage() {
               style={{padding:'14px 36px',background:applying?'rgba(255,255,255,0.3)':'white',color:applying?'rgba(255,255,255,0.7)':'#1560BD',
                 border:'none',borderRadius:'12px',fontWeight:700,cursor:applying?'wait':'pointer',fontSize:'15px',
                 boxShadow:applying?'none':'0 4px 20px rgba(0,0,0,0.2)',transition:'all .2s'}}>
-              {applying?'⏳ Menerapkan & Restart Server...':'⚡ Terapkan ke Server & Restart'}
+              {applying?'Menerapkan & Restart Server...':'Terapkan ke Server & Restart'}
             </button>
             <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginTop:'12px',margin:'12px 0 0'}}>
               Hanya field yang diisi yang akan diperbarui. Field kosong dibiarkan seperti semula.
@@ -793,27 +888,46 @@ export default function SuperAdminPage() {
           {/* SUMMARY STATS */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'12px',marginBottom:'16px'}}>
             {[
-              ['Total Sumber', sources.length, '📡', '#1560BD', '#E8F0FB'],
-              ['Aktif', sources.filter((s:any)=>s.isActive&&s.status!=='error').length, '✅', '#0F6E56', '#DCFCE7'],
-              ['Error', sources.filter((s:any)=>s.status==='error').length, '❌', '#991B1B', '#FEE2E2'],
-              ['Total Item', sources.reduce((a:number,s:any)=>a+(s.itemsFound||0),0).toLocaleString('id-ID'), '📦', '#6D28D9', '#EDE9FE'],
-            ].map(([l,v,i,color,bg])=>(
+              ['Total Sumber', sourcesSummary.total, Radio, '#1560BD', '#E8F0FB'],
+              ['Aktif', sourcesSummary.active, CheckCircle, '#0F6E56', '#DCFCE7'],
+              ['Error', sourcesSummary.error, XCircle, '#991B1B', '#FEE2E2'],
+              ['Total Item', sourcesSummary.totalItems.toLocaleString('id-ID'), Package, '#6D28D9', '#EDE9FE'],
+            ].map(([l,v,Icon,color,bg]:any)=>(
               <div key={String(l)} style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'12px',padding:'14px 16px'}}>
                 <div style={{fontSize:'11px',fontWeight:600,color:'#5A7090',textTransform:'uppercase',marginBottom:'6px'}}>{l}</div>
-                <div style={{fontSize:'22px',fontWeight:800,color:String(color)}}>{String(i)} {String(v)}</div>
+                <div style={{fontSize:'22px',fontWeight:800,color:String(color),display:'flex',alignItems:'center',gap:'6px'}}><Icon size={18}/> {String(v)}</div>
               </div>
             ))}
           </div>
           {/* REFRESH BAR */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px',padding:'10px 16px',background:'white',borderRadius:'10px',border:'1px solid #DDE5EF'}}>
             <div style={{fontSize:'13px',color:'#5A7090'}}>
-              🔄 Auto-refresh tiap 30 detik
+              <span style={{display:'inline-flex',alignItems:'center',gap:'5px'}}><RefreshCw size={13}/> Auto-refresh tiap 30 detik</span>
               {lastRefresh&&<span style={{marginLeft:'8px',color:'#9EB3C8'}}>· Terakhir: {lastRefresh.toLocaleTimeString('id-ID')}</span>}
             </div>
-            <button onClick={()=>fetch('/api/superadmin/sources').then(r=>r.json()).then(d=>{ if(d.sources){ setSources(d.sources); setLastRefresh(new Date()) } })}
+            <button onClick={()=>fetchSources(sourcesPage)}
               style={{padding:'6px 14px',borderRadius:'8px',border:'1px solid #DDE5EF',background:'white',fontSize:'12px',fontWeight:600,color:'#1560BD',cursor:'pointer'}}>
-              🔄 Refresh Sekarang
+              <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><RefreshCw size={14}/> Refresh Sekarang</span>
             </button>
+          </div>
+
+          {/* FILTER BAR */}
+          <div style={{display:'flex',flexWrap:'wrap',gap:'10px',alignItems:'center',marginBottom:'12px',padding:'14px 16px',background:'white',borderRadius:'10px',border:'1px solid #DDE5EF'}}>
+            <input style={{...inp,flex:'1 1 200px',minWidth:'180px'}} placeholder="Cari nama sumber..." value={sourceFilter.search}
+              onChange={e=>setSourceFilter({...sourceFilter,search:e.target.value})}
+              onKeyDown={e=>{ if(e.key==='Enter') applySourceFilter() }}/>
+            <select style={{...inp,flex:'0 1 160px'}} value={sourceFilter.category} onChange={e=>setSourceFilter({...sourceFilter,category:e.target.value})}>
+              <option value="">Semua Kategori</option>
+              {['TENDER','PROPERTI','KENDARAAN','BISNIS','INVESTASI','LOWONGAN','BEASISWA','BANTUAN'].map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+            <select style={{...inp,flex:'0 1 160px'}} value={sourceFilter.status} onChange={e=>setSourceFilter({...sourceFilter,status:e.target.value})}>
+              <option value="">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="error">Error</option>
+              <option value="inactive">Nonaktif</option>
+            </select>
+            <button onClick={applySourceFilter} style={{padding:'10px 18px',borderRadius:'8px',border:'none',background:'#1560BD',color:'white',fontWeight:700,fontSize:'13px',cursor:'pointer'}}>Cari</button>
+            <button onClick={resetSourceFilter} style={{padding:'10px 18px',borderRadius:'8px',border:'1px solid #DDE5EF',background:'white',color:'#5A7090',fontWeight:600,fontSize:'13px',cursor:'pointer'}}>Reset</button>
           </div>
           <div style={{background:'white',border:'1px solid #DDE5EF',borderRadius:'16px',padding:'20px 24px',marginBottom:'16px'}}>
             <h3 style={{fontWeight:700,marginBottom:'4px'}}>Tambah Sumber Monitoring</h3>
@@ -870,10 +984,27 @@ export default function SuperAdminPage() {
                   </tr>
                 ))}
                 {!sources.length&&(
-                  <tr><td colSpan={8} style={{padding:'20px 16px',fontSize:'13px',color:'#9EB3C8',textAlign:'center'}}>Belum ada sumber monitoring. Tambahkan di atas.</td></tr>
+                  <tr><td colSpan={8} style={{padding:'20px 16px',fontSize:'13px',color:'#9EB3C8',textAlign:'center'}}>Tidak ada sumber monitoring yang cocok.</td></tr>
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* PAGINATION */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:'12px',padding:'10px 4px'}}>
+            <div style={{fontSize:'12px',color:'#5A7090'}}>
+              Halaman {sourcesPage} dari {sourcesTotalPages} · {sourcesSummary.total.toLocaleString('id-ID')} sumber total
+            </div>
+            <div style={{display:'flex',gap:'8px'}}>
+              <button disabled={sourcesPage<=1} onClick={()=>fetchSources(sourcesPage-1)}
+                style={{padding:'6px 14px',borderRadius:'8px',border:'1px solid #DDE5EF',background:sourcesPage<=1?'#F1F5F9':'white',color:sourcesPage<=1?'#9EB3C8':'#1560BD',fontWeight:600,fontSize:'12px',cursor:sourcesPage<=1?'not-allowed':'pointer'}}>
+                ← Sebelumnya
+              </button>
+              <button disabled={sourcesPage>=sourcesTotalPages} onClick={()=>fetchSources(sourcesPage+1)}
+                style={{padding:'6px 14px',borderRadius:'8px',border:'1px solid #DDE5EF',background:sourcesPage>=sourcesTotalPages?'#F1F5F9':'white',color:sourcesPage>=sourcesTotalPages?'#9EB3C8':'#1560BD',fontWeight:600,fontSize:'12px',cursor:sourcesPage>=sourcesTotalPages?'not-allowed':'pointer'}}>
+                Selanjutnya →
+              </button>
+            </div>
           </div>
         </div>
       )}
