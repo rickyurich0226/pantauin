@@ -89,7 +89,18 @@ export async function PUT(req: NextRequest) {
     const n = normalizeWaNumber(body.whatsapp)
     if (!n) return NextResponse.json({ error: 'Nomor WhatsApp tidak valid. Contoh: 0812 3456 7890' }, { status: 400 })
     const oldW = user.whatsapp ? normalizeWaNumber(decryptPII(user.whatsapp)) : null
-    if (n !== oldW) { data.whatsapp = encryptPII(body.whatsapp.trim()); data.whatsappVerified = false; waChanged = true }
+    if (n !== oldW) {
+      data.whatsapp = encryptPII(body.whatsapp.trim()); data.whatsappVerified = false; waChanged = true
+      // Nomor WA baru ditambahkan pertama kali oleh user Pro -> otomatis aktifkan
+      // WhatsApp sebagai channel notifikasi, supaya nomor yang disimpan nggak nganggur
+      // (user sering cuma isi nomor di tab Profil tanpa sadar harus centang channel
+      // terpisah di tab Notifikasi). Tidak dipaksakan ke user FREE (channel ini gated
+      // Pro), dan tidak menimpa pilihan user yang sudah pernah punya nomor WA sebelumnya
+      // (supaya tidak override kalau mereka sengaja matikan channel WA).
+      if (!user.whatsapp && (user as any).plan !== 'FREE' && !user.notifChannels.includes('WHATSAPP' as any)) {
+        data.notifChannels = [...user.notifChannels, 'WHATSAPP']
+      }
+    }
   }
   if (typeof body.telegramId === 'string' && body.telegramId.trim()) {
     const t = body.telegramId.trim()
